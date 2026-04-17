@@ -35,19 +35,19 @@ class BaselinePredictor(BasePredictor):
 
     async def predict(self, market: Market, research: ResearchResult) -> PredictionResult:
         nudge = _sentiment(research.articles)
-        our_prob = max(0.02, min(0.98, market.mid_price + nudge))
+        p_model = max(0.02, min(0.98, market.mid_price + nudge))
 
         logger.info(
             "prediction.baseline",
             market_id=market.id,
             mid_price=round(market.mid_price, 3),
             nudge=round(nudge, 4),
-            our_prob=round(our_prob, 3),
+            p_model=round(p_model, 3),
         )
         return PredictionResult(
             market_id=market.id,
-            our_probability=our_prob,
-            market_probability=market.mid_price,
+            p_model=p_model,
+            p_market=market.mid_price,
             confidence=0.40,
             model_name=self.name,
             rationale=f"mid={market.mid_price:.2f} nudge={nudge:+.4f}",

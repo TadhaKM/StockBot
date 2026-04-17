@@ -38,8 +38,8 @@ class RiskManager:
         if pred.confidence < cfg.prediction.min_confidence:
             return SizingDecision(False, 0.0, f"confidence {pred.confidence} below minimum")
 
-        price = pred.market_probability if pred.edge > 0 else 1 - pred.market_probability
-        prob = pred.our_probability if pred.edge > 0 else 1 - pred.our_probability
+        price = pred.p_market if pred.edge > 0 else 1 - pred.p_market
+        prob = pred.p_model if pred.edge > 0 else 1 - pred.p_model
 
         size = kelly_size(
             rc.bankroll_usd,

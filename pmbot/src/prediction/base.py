@@ -1,4 +1,4 @@
-"""Abstract predictor interface."""
+"""Abstract predictor interface and result types."""
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -10,20 +10,17 @@ from src.scanner.base import Market
 
 @dataclass
 class PredictionResult:
+    """Raw output from a predictor -- no rules applied yet."""
     market_id: str
-    our_probability: float
-    market_probability: float
-    confidence: float
+    p_model: float          # model's estimated probability (0-1)
+    p_market: float         # market mid-price at prediction time
+    confidence: float       # model's self-assessed confidence (0-1)
     model_name: str
     rationale: str = ""
 
     @property
     def edge(self) -> float:
-        return self.our_probability - self.market_probability
-
-    @property
-    def has_edge(self) -> bool:
-        return abs(self.edge) > 0.0
+        return self.p_model - self.p_market
 
     @property
     def recommended_side(self) -> str:

@@ -14,6 +14,7 @@ from src.filter.market_filter import MarketFilter
 from src.learning.tracker import PerformanceTracker, PredRecord
 from src.logging_setup import get_logger
 from src.prediction.baseline import BaselinePredictor
+from src.prediction.engine import PredictionEngine
 from src.research.researcher import MarketResearcher
 from src.risk.manager import RiskManager
 from src.scanner.kalshi import KalshiScanner
@@ -30,7 +31,10 @@ class Bot:
         self.rules = load_rules()
         self.market_filter = MarketFilter(rules=self.rules)
         self.researcher = MarketResearcher()
-        self.predictor = BaselinePredictor()
+        self.engine = PredictionEngine(
+            predictor=BaselinePredictor(),
+            rules=self.rules,
+        )
         self.tracker = PerformanceTracker()
         # TODO: swap for live executors when TRADING_MODE=live
         self.executor = PaperExecutor()
@@ -54,11 +58,12 @@ class Bot:
         for sm in scored_markets:
             market = sm.market
             research = await self.researcher.research(market)
-            pred = await self.predictor.predict(market, research)
+            signal = await self.engine.run(market, research)
 
-            if not pred.has_edge:
+            if not signal.is_signal:
                 continue
 
+            pred = signal.prediction
             decision = risk.evaluate(pred)
             if not decision.approved:
                 logger.info("cycle.skip", market_id=market.id, reason=decision.reason)
@@ -77,7 +82,7 @@ class Bot:
                 )
                 continue
 
-            price = pred.market_probability if pred.edge > 0 else 1 - pred.market_probability
+            price = pred.p_market if pred.edge > 0 else 1 - pred.p_market
             trade = await self.executor.submit(
                 market_id=market.id,
                 platform=market.platform,
@@ -89,8 +94,8 @@ class Bot:
 
             self.tracker.record(PredRecord(
                 market_id=market.id,
-                our_probability=pred.our_probability,
-                market_probability=pred.market_probability,
+                p_model=pred.p_model,
+                p_market=pred.p_market,
                 edge=pred.edge,
                 side=pred.recommended_side,
                 size_usd=decision.size_usd,

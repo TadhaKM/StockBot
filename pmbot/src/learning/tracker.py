@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from src.logging_setup import get_logger
@@ -21,8 +21,8 @@ _LOG = Path("data/logs/predictions.jsonl")
 @dataclass
 class PredRecord:
     market_id: str
-    our_probability: float
-    market_probability: float
+    p_model: float
+    p_market: float
     edge: float
     side: str
     size_usd: float
@@ -30,7 +30,7 @@ class PredRecord:
     resolved: bool = False
     outcome_correct: bool | None = None
     pnl: float | None = None
-    predicted_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    predicted_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     resolved_at: str | None = None
 
 
@@ -51,7 +51,7 @@ class PerformanceTracker:
                 rec.resolved = True
                 rec.outcome_correct = correct
                 rec.pnl = pnl
-                rec.resolved_at = datetime.utcnow().isoformat()
+                rec.resolved_at = datetime.now(timezone.utc).isoformat()
                 logger.info("tracker.resolved", market_id=market_id, correct=correct, pnl=pnl)
                 return
 
