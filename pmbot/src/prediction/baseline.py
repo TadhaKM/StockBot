@@ -30,12 +30,34 @@ def _sentiment(articles: list[dict]) -> float:
     return max(-0.10, min(0.10, score * 0.01))
 
 
+def _confidence(articles: list[dict], nudge: float) -> float:
+    """
+    Confidence score based on quantity of evidence and strength of signal.
+
+    Components (all additive on top of a 0.35 base):
+      data_score   : up to +0.20  (saturates at 15 articles)
+      signal_score : up to +0.25  (proportional to |nudge|, max at 0.10)
+
+    Range: [0.35, 0.80]
+
+    Intuition:
+      - No news, no sentiment       → 0.35  (almost no basis for prediction)
+      - Many articles, weak signal  → ~0.50 (data present but directionless)
+      - Few articles, strong signal → ~0.60 (clear direction, thin evidence)
+      - Many articles, strong signal→ ~0.80 (high conviction)
+    """
+    data_score = min(len(articles), 15) / 15 * 0.20
+    signal_score = (abs(nudge) / 0.10) * 0.25
+    return round(max(0.35, min(0.80, 0.35 + data_score + signal_score)), 4)
+
+
 class BaselinePredictor(BasePredictor):
     name = "baseline_v1"
 
     async def predict(self, market: Market, research: ResearchResult) -> PredictionResult:
         nudge = _sentiment(research.articles)
         p_model = max(0.02, min(0.98, market.mid_price + nudge))
+        confidence = _confidence(research.articles, nudge)
 
         logger.info(
             "prediction.baseline",
@@ -43,12 +65,13 @@ class BaselinePredictor(BasePredictor):
             mid_price=round(market.mid_price, 3),
             nudge=round(nudge, 4),
             p_model=round(p_model, 3),
+            confidence=confidence,
         )
         return PredictionResult(
             market_id=market.id,
             p_model=p_model,
             p_market=market.mid_price,
-            confidence=0.40,
+            confidence=confidence,
             model_name=self.name,
-            rationale=f"mid={market.mid_price:.2f} nudge={nudge:+.4f}",
+            rationale=f"mid={market.mid_price:.2f} nudge={nudge:+.4f} conf={confidence:.2f}",
         )
