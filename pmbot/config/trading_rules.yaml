@@ -20,3 +20,4 @@ sizing:
 
 execution:
   max_slippage: 0.02         # maximum acceptable slippage fraction before rejecting fill
+  depth_band: 0.02           # band width (absolute) around mid for depth calculation

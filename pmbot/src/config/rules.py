@@ -50,6 +50,7 @@ class SizingRules(BaseModel):
 
 class ExecutionRules(BaseModel):
     max_slippage: float = 0.02
+    depth_band: float = 0.02
 
 
 class TradingRules(BaseModel):

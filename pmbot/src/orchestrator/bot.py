@@ -7,6 +7,8 @@ Pipeline:
 from __future__ import annotations
 
 from src.config import cfg
+from src.config.rules import load_rules
+from src.execution.orderbook import OrderBook
 from src.execution.paper import PaperExecutor
 from src.filter.market_filter import MarketFilter
 from src.learning.tracker import PerformanceTracker, PredRecord
@@ -25,7 +27,8 @@ class Bot:
 
     def __init__(self) -> None:
         self.scanner_classes = [PolymarketScanner, KalshiScanner]
-        self.market_filter = MarketFilter()
+        self.rules = load_rules()
+        self.market_filter = MarketFilter(rules=self.rules)
         self.researcher = MarketResearcher()
         self.predictor = BaselinePredictor()
         self.tracker = PerformanceTracker()
@@ -59,6 +62,19 @@ class Bot:
             decision = risk.evaluate(pred)
             if not decision.approved:
                 logger.info("cycle.skip", market_id=market.id, reason=decision.reason)
+                continue
+
+            # ── Orderbook safety gate ─────────────────────────────────────
+            book = OrderBook.from_market(market)
+            book_check = book.is_trade_safe(
+                pred.recommended_side, decision.size_usd, self.rules,
+            )
+            if not book_check:
+                logger.info(
+                    "cycle.skip",
+                    market_id=market.id,
+                    reason=f"orderbook: {book_check.failures}",
+                )
                 continue
 
             price = pred.market_probability if pred.edge > 0 else 1 - pred.market_probability
