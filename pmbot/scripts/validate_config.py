@@ -37,7 +37,7 @@ def main(
     typer.echo(f"  bankroll_usd:            {cfg.risk.bankroll_usd}")
     typer.echo(f"  max_bankroll_fraction:   {cfg.risk.max_bankroll_fraction}")
     typer.echo(f"  max_open_positions:      {cfg.risk.max_open_positions}")
-    typer.echo(f"  min_edge:                {cfg.risk.min_edge}")
+    typer.echo(f"  min_edge_threshold:      {cfg.risk.min_edge_threshold}")
     typer.echo(f"  kelly_fraction:          {cfg.risk.kelly_fraction}")
     typer.echo(f"  polymarket enabled:      {cfg.platforms.polymarket is not None}")
     typer.echo(f"  kalshi enabled:          {cfg.platforms.kalshi is not None}")
