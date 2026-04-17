@@ -121,12 +121,12 @@ def validate_market_conditions(market: Market, rules: TradingRules) -> RuleResul
             f"volume {market.volume_usd:.0f} < min {mr.min_volume:.0f}"
         )
 
-    if market.spread is not None and market.spread > mr.max_spread:
+    if market.spread > mr.max_spread:
         failures.append(
             f"spread {market.spread:.4f} > max {mr.max_spread:.4f}"
         )
 
-    if market.orderbook_depth is not None and market.orderbook_depth < mr.min_orderbook_depth:
+    if market.orderbook_depth < mr.min_orderbook_depth:
         failures.append(
             f"orderbook_depth {market.orderbook_depth:.0f} < min {mr.min_orderbook_depth:.0f}"
         )

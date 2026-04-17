@@ -42,13 +42,14 @@ class Bot:
             if cfg.platforms.__dict__.get(cls.platform, None) is not None:
                 raw_markets.extend(await cls().scan())
 
-        # ── 2. Filter ─────────────────────────────────────────────────────────
-        markets = self.market_filter.run(raw_markets)
+        # ── 2. Filter + rank ──────────────────────────────────────────────────
+        scored_markets = self.market_filter.run(raw_markets)
 
         # ── 3–6. Research → Predict → Risk → Execute ─────────────────────────
         risk = RiskManager(open_market_ids=self._open_ids)
 
-        for market in markets:
+        for sm in scored_markets:
+            market = sm.market
             research = await self.researcher.research(market)
             pred = await self.predictor.predict(market, research)
 

@@ -33,14 +33,14 @@ class MarketResearcher:
 
         news_key = cfg.secrets.get("research", {}).get("news_api_key", "")
         if news_key:
-            result.articles = await self._fetch_news(market.question, news_key)
+            result.articles = await self._fetch_news(market.title, news_key)
         else:
             logger.warning("research.no_news_key", market_id=market.id)
 
         logger.info("research.done", market_id=market.id, articles=len(result.articles))
 
         # TODO: Step 2 — LLM summarization
-        # result.summary = await llm.summarize(market.question, result.articles)
+        # result.summary = await llm.summarize(market.title, result.articles)
 
         # TODO: Step 3 — base-rate lookup from historical data store
 

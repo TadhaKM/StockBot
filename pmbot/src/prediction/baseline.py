@@ -1,5 +1,5 @@
 """
-Baseline predictor: anchors to market probability, adds a tiny sentiment nudge.
+Baseline predictor: anchors to market mid-price, adds a tiny sentiment nudge.
 Intentionally naive — gives the pipeline something to run before a real model is wired in.
 
 TODO: Replace with calibrated LLM-based forecaster.
@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import re
 
-from src.config import cfg
 from src.logging_setup import get_logger
 from src.research.researcher import ResearchResult
 from src.scanner.base import Market
@@ -36,20 +35,20 @@ class BaselinePredictor(BasePredictor):
 
     async def predict(self, market: Market, research: ResearchResult) -> PredictionResult:
         nudge = _sentiment(research.articles)
-        our_prob = max(0.02, min(0.98, market.yes_probability + nudge))
+        our_prob = max(0.02, min(0.98, market.mid_price + nudge))
 
         logger.info(
             "prediction.baseline",
             market_id=market.id,
-            market_prob=round(market.yes_probability, 3),
+            mid_price=round(market.mid_price, 3),
             nudge=round(nudge, 4),
             our_prob=round(our_prob, 3),
         )
         return PredictionResult(
             market_id=market.id,
             our_probability=our_prob,
-            market_probability=market.yes_probability,
+            market_probability=market.mid_price,
             confidence=0.40,
             model_name=self.name,
-            rationale=f"market={market.yes_probability:.2f} nudge={nudge:+.4f}",
+            rationale=f"mid={market.mid_price:.2f} nudge={nudge:+.4f}",
         )

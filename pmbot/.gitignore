@@ -20,6 +20,8 @@ config/secrets.yaml
 
 # Data — keep structure, not content
 data/logs/*.jsonl
+data/logs/*.json
+data/logs/*.log
 data/trades/*.jsonl
 
 # IDE
