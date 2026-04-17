@@ -1,0 +1,968 @@
+{
+  "nodes": [
+    {
+      "id": "readme_awesome_design_md",
+      "label": "Awesome DESIGN.md Repository",
+      "file_type": "document",
+      "source_file": "awesome-design-md/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": "VoltAgent",
+      "contributor": null
+    },
+    {
+      "id": "contributing_awesome_design_md",
+      "label": "Contributing Guide",
+      "file_type": "document",
+      "source_file": "awesome-design-md/CONTRIBUTING.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": "VoltAgent",
+      "contributor": null
+    },
+    {
+      "id": "concept_design_md_format",
+      "label": "DESIGN.md Format",
+      "file_type": "document",
+      "source_file": "awesome-design-md/README.md",
+      "source_location": "What is DESIGN.md?",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "concept_stitch_google",
+      "label": "Google Stitch",
+      "file_type": "document",
+      "source_file": "awesome-design-md/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "concept_agents_md",
+      "label": "AGENTS.md Format",
+      "file_type": "document",
+      "source_file": "awesome-design-md/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "concept_voltagent",
+      "label": "VoltAgent AI Agent Framework",
+      "file_type": "document",
+      "source_file": "awesome-design-md/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_airbnb",
+      "label": "Airbnb Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/airbnb/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_airtable",
+      "label": "Airtable Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/airtable/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_apple",
+      "label": "Apple Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/apple/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_bmw",
+      "label": "BMW Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/bmw/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_cal",
+      "label": "Cal.com Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/cal/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_claude",
+      "label": "Claude (Anthropic) Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/claude/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_clay",
+      "label": "Clay Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/clay/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_clickhouse",
+      "label": "ClickHouse Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/clickhouse/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_cohere",
+      "label": "Cohere Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/cohere/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_coinbase",
+      "label": "Coinbase Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/coinbase/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_composio",
+      "label": "Composio Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/composio/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_cursor",
+      "label": "Cursor Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/cursor/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_elevenlabs",
+      "label": "ElevenLabs Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/elevenlabs/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_expo",
+      "label": "Expo Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/expo/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_ferrari",
+      "label": "Ferrari Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/ferrari/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_figma",
+      "label": "Figma Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/figma/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_framer",
+      "label": "Framer Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/framer/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_hashicorp",
+      "label": "HashiCorp Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/hashicorp/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_ibm",
+      "label": "IBM Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/ibm/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "intercom_design_system",
+      "label": "Intercom Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/intercom/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "kraken_design_system",
+      "label": "Kraken Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/kraken/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "lamborghini_design_system",
+      "label": "Lamborghini Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/lamborghini/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "linear_design_system",
+      "label": "Linear Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/linear.app/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "lovable_design_system",
+      "label": "Lovable Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/lovable/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "minimax_design_system",
+      "label": "Minimax Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/minimax/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "mintlify_design_system",
+      "label": "Mintlify Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/mintlify/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "miro_design_system",
+      "label": "Miro Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/miro/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "mistral_design_system",
+      "label": "Mistral AI Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/mistral.ai/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "mongodb_design_system",
+      "label": "MongoDB Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/mongodb/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "notion_design_system",
+      "label": "Notion Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/notion/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nvidia_design_system",
+      "label": "NVIDIA Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/nvidia/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ollama_design_system",
+      "label": "Ollama Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/ollama/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "opencode_design_system",
+      "label": "OpenCode AI Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/opencode.ai/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "pinterest_design_system",
+      "label": "Pinterest Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/pinterest/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "posthog_design_system",
+      "label": "PostHog Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/posthog/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "raycast_design_system",
+      "label": "Raycast Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/raycast/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "renault_design_system",
+      "label": "Renault Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/renault/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "replicate_design_system",
+      "label": "Replicate Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/replicate/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "resend_design_system",
+      "label": "Resend Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/resend/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "revolut_design_system",
+      "label": "Revolut Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/revolut/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "runwayml_design_system",
+      "label": "RunwayML Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/runwayml/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "sanity_design_system",
+      "label": "Sanity Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/sanity/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "semrush_design_system",
+      "label": "Semrush Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/semrush/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "sentry_design_system",
+      "label": "Sentry Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/sentry/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "spacex_design_system",
+      "label": "SpaceX Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/spacex/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "spotify_design_system",
+      "label": "Spotify Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/spotify/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "stripe_design_system",
+      "label": "Stripe Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/stripe/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "supabase_design_system",
+      "label": "Supabase Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/supabase/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "superhuman_design_system",
+      "label": "Superhuman Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/superhuman/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tesla_design_system",
+      "label": "Tesla Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/tesla/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "togetherai_design_system",
+      "label": "Together AI Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/together.ai/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "uber_design_system",
+      "label": "Uber Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/uber/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "vercel_design_system",
+      "label": "Vercel Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/vercel/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "voltagent_design_system",
+      "label": "VoltAgent Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/voltagent/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "warp_design_system",
+      "label": "Warp Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/warp/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "webflow_design_system",
+      "label": "Webflow Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/webflow/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "wise_design_system",
+      "label": "Wise Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/wise/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "xai_design_system",
+      "label": "xAI Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/x.ai/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "zapier_design_system",
+      "label": "Zapier Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/zapier/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "readme_awesome_design_md",
+      "target": "concept_design_md_format",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "awesome-design-md/README.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "brand_bmw",
+      "target": "brand_ferrari",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "awesome-design-md/README.md",
+      "source_location": null,
+      "weight": 0.85
+    },
+    {
+      "source": "brand_cohere",
+      "target": "brand_elevenlabs",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "awesome-design-md/README.md",
+      "source_location": null,
+      "weight": 0.75
+    },
+    {
+      "source": "concept_design_md_format",
+      "target": "concept_agents_md",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "awesome-design-md/README.md",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "brand_ibm",
+      "target": "brand_hashicorp",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "awesome-design-md/README.md",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "lamborghini_design_system",
+      "target": "renault_design_system",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "awesome-design-md/design-md/lamborghini/README.md",
+      "source_location": null,
+      "weight": 0.8
+    },
+    {
+      "source": "notion_design_system",
+      "target": "linear_design_system",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "awesome-design-md/design-md/notion/README.md",
+      "source_location": null,
+      "weight": 0.75
+    },
+    {
+      "source": "revolut_design_system",
+      "target": "kraken_design_system",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "awesome-design-md/design-md/revolut/README.md",
+      "source_location": null,
+      "weight": 0.75
+    },
+    {
+      "source": "mistral_design_system",
+      "target": "minimax_design_system",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "awesome-design-md/design-md/mistral.ai/README.md",
+      "source_location": null,
+      "weight": 0.75
+    },
+    {
+      "source": "ollama_design_system",
+      "target": "replicate_design_system",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "awesome-design-md/design-md/ollama/README.md",
+      "source_location": null,
+      "weight": 0.75
+    },
+    {
+      "source": "stripe_design_system",
+      "target": "supabase_design_system",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "awesome-design-md/design-md/stripe/README.md",
+      "source_location": null,
+      "weight": 0.85
+    },
+    {
+      "source": "vercel_design_system",
+      "target": "webflow_design_system",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "awesome-design-md/design-md/vercel/README.md",
+      "source_location": null,
+      "weight": 0.8
+    },
+    {
+      "source": "togetherai_design_system",
+      "target": "xai_design_system",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "awesome-design-md/design-md/together.ai/README.md",
+      "source_location": null,
+      "weight": 0.8
+    },
+    {
+      "source": "tesla_design_system",
+      "target": "spacex_design_system",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "awesome-design-md/design-md/tesla/README.md",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "spotify_design_system",
+      "target": "superhuman_design_system",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "awesome-design-md/design-md/spotify/README.md",
+      "source_location": null,
+      "weight": 0.75
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "ai_llm_design_systems",
+      "label": "AI/LLM Platform Design Systems",
+      "nodes": [
+        "brand_claude",
+        "brand_cohere",
+        "brand_elevenlabs",
+        "concept_voltagent"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "awesome-design-md/README.md"
+    },
+    {
+      "id": "automotive_design_systems",
+      "label": "Automotive Brand Design Systems",
+      "nodes": [
+        "brand_bmw",
+        "brand_ferrari"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "awesome-design-md/README.md"
+    },
+    {
+      "id": "ai_platform_design_systems_2",
+      "label": "AI Platform Design Systems",
+      "nodes": [
+        "mistral_design_system",
+        "minimax_design_system",
+        "ollama_design_system",
+        "replicate_design_system",
+        "opencode_design_system"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "awesome-design-md/design-md/mistral.ai/README.md"
+    },
+    {
+      "id": "fintech_design_systems_2",
+      "label": "Fintech Design Systems",
+      "nodes": [
+        "revolut_design_system",
+        "kraken_design_system",
+        "resend_design_system"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "awesome-design-md/design-md/revolut/README.md"
+    },
+    {
+      "id": "ai_platform_design_systems_3",
+      "label": "AI Platform Design Systems",
+      "nodes": [
+        "runwayml_design_system",
+        "togetherai_design_system",
+        "xai_design_system"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "awesome-design-md/design-md/runwayml/README.md"
+    },
+    {
+      "id": "developer_tool_design_systems",
+      "label": "Developer Tool Design Systems",
+      "nodes": [
+        "sentry_design_system",
+        "supabase_design_system",
+        "vercel_design_system"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "awesome-design-md/design-md/sentry/README.md"
+    },
+    {
+      "id": "fintech_design_systems_3",
+      "label": "Fintech Design Systems",
+      "nodes": [
+        "stripe_design_system",
+        "wise_design_system",
+        "zapier_design_system"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "awesome-design-md/design-md/stripe/README.md"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

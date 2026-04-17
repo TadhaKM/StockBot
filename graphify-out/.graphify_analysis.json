@@ -1,0 +1,337 @@
+{
+  "communities": {
+    "0": [
+      "concept_agents_md",
+      "concept_design_md_format",
+      "readme_awesome_design_md"
+    ],
+    "1": [
+      "togetherai_design_system",
+      "xai_design_system"
+    ],
+    "2": [
+      "brand_bmw",
+      "brand_ferrari"
+    ],
+    "3": [
+      "stripe_design_system",
+      "supabase_design_system"
+    ],
+    "4": [
+      "kraken_design_system",
+      "revolut_design_system"
+    ],
+    "5": [
+      "minimax_design_system",
+      "mistral_design_system"
+    ],
+    "6": [
+      "spacex_design_system",
+      "tesla_design_system"
+    ],
+    "7": [
+      "brand_hashicorp",
+      "brand_ibm"
+    ],
+    "8": [
+      "ollama_design_system",
+      "replicate_design_system"
+    ],
+    "9": [
+      "lamborghini_design_system",
+      "renault_design_system"
+    ],
+    "10": [
+      "spotify_design_system",
+      "superhuman_design_system"
+    ],
+    "11": [
+      "linear_design_system",
+      "notion_design_system"
+    ],
+    "12": [
+      "brand_cohere",
+      "brand_elevenlabs"
+    ],
+    "13": [
+      "vercel_design_system",
+      "webflow_design_system"
+    ],
+    "14": [
+      "contributing_awesome_design_md"
+    ],
+    "15": [
+      "concept_stitch_google"
+    ],
+    "16": [
+      "concept_voltagent"
+    ],
+    "17": [
+      "brand_airbnb"
+    ],
+    "18": [
+      "brand_airtable"
+    ],
+    "19": [
+      "brand_apple"
+    ],
+    "20": [
+      "brand_cal"
+    ],
+    "21": [
+      "brand_claude"
+    ],
+    "22": [
+      "brand_clay"
+    ],
+    "23": [
+      "brand_clickhouse"
+    ],
+    "24": [
+      "brand_coinbase"
+    ],
+    "25": [
+      "brand_composio"
+    ],
+    "26": [
+      "brand_cursor"
+    ],
+    "27": [
+      "brand_expo"
+    ],
+    "28": [
+      "brand_figma"
+    ],
+    "29": [
+      "brand_framer"
+    ],
+    "30": [
+      "intercom_design_system"
+    ],
+    "31": [
+      "lovable_design_system"
+    ],
+    "32": [
+      "mintlify_design_system"
+    ],
+    "33": [
+      "miro_design_system"
+    ],
+    "34": [
+      "mongodb_design_system"
+    ],
+    "35": [
+      "nvidia_design_system"
+    ],
+    "36": [
+      "opencode_design_system"
+    ],
+    "37": [
+      "pinterest_design_system"
+    ],
+    "38": [
+      "posthog_design_system"
+    ],
+    "39": [
+      "raycast_design_system"
+    ],
+    "40": [
+      "resend_design_system"
+    ],
+    "41": [
+      "runwayml_design_system"
+    ],
+    "42": [
+      "sanity_design_system"
+    ],
+    "43": [
+      "semrush_design_system"
+    ],
+    "44": [
+      "sentry_design_system"
+    ],
+    "45": [
+      "uber_design_system"
+    ],
+    "46": [
+      "voltagent_design_system"
+    ],
+    "47": [
+      "warp_design_system"
+    ],
+    "48": [
+      "wise_design_system"
+    ],
+    "49": [
+      "zapier_design_system"
+    ]
+  },
+  "cohesion": {
+    "0": 0.67,
+    "1": 1.0,
+    "2": 1.0,
+    "3": 1.0,
+    "4": 1.0,
+    "5": 1.0,
+    "6": 1.0,
+    "7": 1.0,
+    "8": 1.0,
+    "9": 1.0,
+    "10": 1.0,
+    "11": 1.0,
+    "12": 1.0,
+    "13": 1.0,
+    "14": 1.0,
+    "15": 1.0,
+    "16": 1.0,
+    "17": 1.0,
+    "18": 1.0,
+    "19": 1.0,
+    "20": 1.0,
+    "21": 1.0,
+    "22": 1.0,
+    "23": 1.0,
+    "24": 1.0,
+    "25": 1.0,
+    "26": 1.0,
+    "27": 1.0,
+    "28": 1.0,
+    "29": 1.0,
+    "30": 1.0,
+    "31": 1.0,
+    "32": 1.0,
+    "33": 1.0,
+    "34": 1.0,
+    "35": 1.0,
+    "36": 1.0,
+    "37": 1.0,
+    "38": 1.0,
+    "39": 1.0,
+    "40": 1.0,
+    "41": 1.0,
+    "42": 1.0,
+    "43": 1.0,
+    "44": 1.0,
+    "45": 1.0,
+    "46": 1.0,
+    "47": 1.0,
+    "48": 1.0,
+    "49": 1.0
+  },
+  "gods": [
+    {
+      "id": "concept_design_md_format",
+      "label": "DESIGN.md Format",
+      "edges": 2
+    },
+    {
+      "id": "readme_awesome_design_md",
+      "label": "Awesome DESIGN.md Repository",
+      "edges": 1
+    },
+    {
+      "id": "concept_agents_md",
+      "label": "AGENTS.md Format",
+      "edges": 1
+    },
+    {
+      "id": "brand_bmw",
+      "label": "BMW Design System",
+      "edges": 1
+    },
+    {
+      "id": "brand_cohere",
+      "label": "Cohere Design System",
+      "edges": 1
+    },
+    {
+      "id": "brand_elevenlabs",
+      "label": "ElevenLabs Design System",
+      "edges": 1
+    },
+    {
+      "id": "brand_ferrari",
+      "label": "Ferrari Design System",
+      "edges": 1
+    },
+    {
+      "id": "brand_hashicorp",
+      "label": "HashiCorp Design System",
+      "edges": 1
+    },
+    {
+      "id": "brand_ibm",
+      "label": "IBM Design System",
+      "edges": 1
+    },
+    {
+      "id": "kraken_design_system",
+      "label": "Kraken Design System",
+      "edges": 1
+    }
+  ],
+  "surprises": [
+    {
+      "source": "BMW Design System",
+      "target": "Ferrari Design System",
+      "source_files": [
+        "awesome-design-md/design-md/bmw/README.md",
+        "awesome-design-md/design-md/ferrari/README.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "semantically_similar_to",
+      "why": "inferred connection - not explicitly stated in source; semantically similar concepts with no structural link"
+    },
+    {
+      "source": "Cohere Design System",
+      "target": "ElevenLabs Design System",
+      "source_files": [
+        "awesome-design-md/design-md/cohere/README.md",
+        "awesome-design-md/design-md/elevenlabs/README.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "semantically_similar_to",
+      "why": "inferred connection - not explicitly stated in source; semantically similar concepts with no structural link"
+    },
+    {
+      "source": "IBM Design System",
+      "target": "HashiCorp Design System",
+      "source_files": [
+        "awesome-design-md/design-md/ibm/README.md",
+        "awesome-design-md/design-md/hashicorp/README.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "semantically_similar_to",
+      "why": "inferred connection - not explicitly stated in source; semantically similar concepts with no structural link"
+    },
+    {
+      "source": "Revolut Design System",
+      "target": "Kraken Design System",
+      "source_files": [
+        "awesome-design-md/design-md/revolut/README.md",
+        "awesome-design-md/design-md/kraken/README.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "semantically_similar_to",
+      "why": "inferred connection - not explicitly stated in source; semantically similar concepts with no structural link"
+    },
+    {
+      "source": "Lamborghini Design System",
+      "target": "Renault Design System",
+      "source_files": [
+        "awesome-design-md/design-md/lamborghini/README.md",
+        "awesome-design-md/design-md/renault/README.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "semantically_similar_to",
+      "why": "inferred connection - not explicitly stated in source; semantically similar concepts with no structural link"
+    }
+  ],
+  "questions": [
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `Awesome DESIGN.md Repository`, `Contributing Guide`, `Google Stitch` to the rest of the system?",
+      "why": "64 weakly-connected nodes found - possible documentation gaps or missing edges."
+    }
+  ]
+}

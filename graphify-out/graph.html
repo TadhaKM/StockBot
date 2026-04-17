@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>graphify - graphify-out/graph.html</title>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f0f1a; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; display: flex; height: 100vh; overflow: hidden; }
+  #graph { flex: 1; }
+  #sidebar { width: 280px; background: #1a1a2e; border-left: 1px solid #2a2a4e; display: flex; flex-direction: column; overflow: hidden; }
+  #search-wrap { padding: 12px; border-bottom: 1px solid #2a2a4e; }
+  #search { width: 100%; background: #0f0f1a; border: 1px solid #3a3a5e; color: #e0e0e0; padding: 7px 10px; border-radius: 6px; font-size: 13px; outline: none; }
+  #search:focus { border-color: #4E79A7; }
+  #search-results { max-height: 140px; overflow-y: auto; padding: 4px 12px; border-bottom: 1px solid #2a2a4e; display: none; }
+  .search-item { padding: 4px 6px; cursor: pointer; border-radius: 4px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .search-item:hover { background: #2a2a4e; }
+  #info-panel { padding: 14px; border-bottom: 1px solid #2a2a4e; min-height: 140px; }
+  #info-panel h3 { font-size: 13px; color: #aaa; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+  #info-content { font-size: 13px; color: #ccc; line-height: 1.6; }
+  #info-content .field { margin-bottom: 5px; }
+  #info-content .field b { color: #e0e0e0; }
+  #info-content .empty { color: #555; font-style: italic; }
+  .neighbor-link { display: block; padding: 2px 6px; margin: 2px 0; border-radius: 3px; cursor: pointer; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 3px solid #333; }
+  .neighbor-link:hover { background: #2a2a4e; }
+  #neighbors-list { max-height: 160px; overflow-y: auto; margin-top: 4px; }
+  #legend-wrap { flex: 1; overflow-y: auto; padding: 12px; }
+  #legend-wrap h3 { font-size: 13px; color: #aaa; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .legend-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; border-radius: 4px; font-size: 12px; }
+  .legend-item:hover { background: #2a2a4e; padding-left: 4px; }
+  .legend-item.dimmed { opacity: 0.35; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .legend-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .legend-count { color: #666; font-size: 11px; }
+  #stats { padding: 10px 14px; border-top: 1px solid #2a2a4e; font-size: 11px; color: #555; }
+</style>
+</head>
+<body>
+<div id="graph"></div>
+<div id="sidebar">
+  <div id="search-wrap">
+    <input id="search" type="text" placeholder="Search nodes..." autocomplete="off">
+    <div id="search-results"></div>
+  </div>
+  <div id="info-panel">
+    <h3>Node Info</h3>
+    <div id="info-content"><span class="empty">Click a node to inspect it</span></div>
+  </div>
+  <div id="legend-wrap">
+    <h3>Communities</h3>
+    <div id="legend"></div>
+  </div>
+  <div id="stats">65 nodes &middot; 15 edges &middot; 50 communities</div>
+</div>
+<script>
+const RAW_NODES = [{"id": "readme_awesome_design_md", "label": "Awesome DESIGN.md Repository", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Awesome DESIGN.md Repository", "community": 0, "community_name": "DESIGN.md Format Spec", "source_file": "awesome-design-md/README.md", "file_type": "document", "degree": 1}, {"id": "contributing_awesome_design_md", "label": "Contributing Guide", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Contributing Guide", "community": 14, "community_name": "Contribution Guidelines", "source_file": "awesome-design-md/CONTRIBUTING.md", "file_type": "document", "degree": 0}, {"id": "concept_design_md_format", "label": "DESIGN.md Format", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 40.0, "font": {"size": 12, "color": "#ffffff"}, "title": "DESIGN.md Format", "community": 0, "community_name": "DESIGN.md Format Spec", "source_file": "awesome-design-md/README.md", "file_type": "document", "degree": 2}, {"id": "concept_stitch_google", "label": "Google Stitch", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Google Stitch", "community": 15, "community_name": "Google Stitch", "source_file": "awesome-design-md/README.md", "file_type": "document", "degree": 0}, {"id": "concept_agents_md", "label": "AGENTS.md Format", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "AGENTS.md Format", "community": 0, "community_name": "DESIGN.md Format Spec", "source_file": "awesome-design-md/README.md", "file_type": "document", "degree": 1}, {"id": "concept_voltagent", "label": "VoltAgent AI Agent Framework", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "VoltAgent AI Agent Framework", "community": 16, "community_name": "VoltAgent AI Agent Framework", "source_file": "awesome-design-md/README.md", "file_type": "document", "degree": 0}, {"id": "brand_airbnb", "label": "Airbnb Design System", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Airbnb Design System", "community": 17, "community_name": "Airbnb Design System", "source_file": "awesome-design-md/design-md/airbnb/README.md", "file_type": "document", "degree": 0}, {"id": "brand_airtable", "label": "Airtable Design System", "color": {"background": "#9C755F", "border": "#9C755F", "highlight": {"background": "#ffffff", "border": "#9C755F"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Airtable Design System", "community": 18, "community_name": "Airtable Design System", "source_file": "awesome-design-md/design-md/airtable/README.md", "file_type": "document", "degree": 0}, {"id": "brand_apple", "label": "Apple Design System", "color": {"background": "#BAB0AC", "border": "#BAB0AC", "highlight": {"background": "#ffffff", "border": "#BAB0AC"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Apple Design System", "community": 19, "community_name": "Apple Design System", "source_file": "awesome-design-md/design-md/apple/README.md", "file_type": "document", "degree": 0}, {"id": "brand_bmw", "label": "BMW Design System", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "BMW Design System", "community": 7, "community_name": "Luxury Automotive", "source_file": "awesome-design-md/design-md/bmw/README.md", "file_type": "document", "degree": 1}, {"id": "brand_cal", "label": "Cal.com Design System", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Cal.com Design System", "community": 20, "community_name": "Cal.com Design System", "source_file": "awesome-design-md/design-md/cal/README.md", "file_type": "document", "degree": 0}, {"id": "brand_claude", "label": "Claude (Anthropic) Design System", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Claude (Anthropic) Design System", "community": 21, "community_name": "Claude (Anthropic) Design System", "source_file": "awesome-design-md/design-md/claude/README.md", "file_type": "document", "degree": 0}, {"id": "brand_clay", "label": "Clay Design System", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Clay Design System", "community": 22, "community_name": "Clay Design System", "source_file": "awesome-design-md/design-md/clay/README.md", "file_type": "document", "degree": 0}, {"id": "brand_clickhouse", "label": "ClickHouse Design System", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "ClickHouse Design System", "community": 23, "community_name": "ClickHouse Design System", "source_file": "awesome-design-md/design-md/clickhouse/README.md", "file_type": "document", "degree": 0}, {"id": "brand_cohere", "label": "Cohere Design System", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Cohere Design System", "community": 12, "community_name": "AI Platform Design", "source_file": "awesome-design-md/design-md/cohere/README.md", "file_type": "document", "degree": 1}, {"id": "brand_coinbase", "label": "Coinbase Design System", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Coinbase Design System", "community": 24, "community_name": "Coinbase Design System", "source_file": "awesome-design-md/design-md/coinbase/README.md", "file_type": "document", "degree": 0}, {"id": "brand_composio", "label": "Composio Design System", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Composio Design System", "community": 25, "community_name": "Composio Design System", "source_file": "awesome-design-md/design-md/composio/README.md", "file_type": "document", "degree": 0}, {"id": "brand_cursor", "label": "Cursor Design System", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Cursor Design System", "community": 26, "community_name": "Cursor Design System", "source_file": "awesome-design-md/design-md/cursor/README.md", "file_type": "document", "degree": 0}, {"id": "brand_elevenlabs", "label": "ElevenLabs Design System", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "ElevenLabs Design System", "community": 12, "community_name": "AI Platform Design", "source_file": "awesome-design-md/design-md/elevenlabs/README.md", "file_type": "document", "degree": 1}, {"id": "brand_expo", "label": "Expo Design System", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Expo Design System", "community": 27, "community_name": "Expo Design System", "source_file": "awesome-design-md/design-md/expo/README.md", "file_type": "document", "degree": 0}, {"id": "brand_ferrari", "label": "Ferrari Design System", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Ferrari Design System", "community": 7, "community_name": "Luxury Automotive", "source_file": "awesome-design-md/design-md/ferrari/README.md", "file_type": "document", "degree": 1}, {"id": "brand_figma", "label": "Figma Design System", "color": {"background": "#9C755F", "border": "#9C755F", "highlight": {"background": "#ffffff", "border": "#9C755F"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Figma Design System", "community": 28, "community_name": "Figma Design System", "source_file": "awesome-design-md/design-md/figma/README.md", "file_type": "document", "degree": 0}, {"id": "brand_framer", "label": "Framer Design System", "color": {"background": "#BAB0AC", "border": "#BAB0AC", "highlight": {"background": "#ffffff", "border": "#BAB0AC"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Framer Design System", "community": 29, "community_name": "Framer Design System", "source_file": "awesome-design-md/design-md/framer/README.md", "file_type": "document", "degree": 0}, {"id": "brand_hashicorp", "label": "HashiCorp Design System", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "HashiCorp Design System", "community": 13, "community_name": "Enterprise Technology", "source_file": "awesome-design-md/design-md/hashicorp/README.md", "file_type": "document", "degree": 1}, {"id": "brand_ibm", "label": "IBM Design System", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "IBM Design System", "community": 13, "community_name": "Enterprise Technology", "source_file": "awesome-design-md/design-md/ibm/README.md", "file_type": "document", "degree": 1}, {"id": "intercom_design_system", "label": "Intercom Design System", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Intercom Design System", "community": 30, "community_name": "Intercom Design System", "source_file": "awesome-design-md/design-md/intercom/README.md", "file_type": "document", "degree": 0}, {"id": "kraken_design_system", "label": "Kraken Design System", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Kraken Design System", "community": 4, "community_name": "Fintech & Crypto", "source_file": "awesome-design-md/design-md/kraken/README.md", "file_type": "document", "degree": 1}, {"id": "lamborghini_design_system", "label": "Lamborghini Design System", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Lamborghini Design System", "community": 3, "community_name": "European Automotive", "source_file": "awesome-design-md/design-md/lamborghini/README.md", "file_type": "document", "degree": 1}, {"id": "linear_design_system", "label": "Linear Design System", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Linear Design System", "community": 1, "community_name": "Productivity SaaS Tools", "source_file": "awesome-design-md/design-md/linear.app/README.md", "file_type": "document", "degree": 1}, {"id": "lovable_design_system", "label": "Lovable Design System", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Lovable Design System", "community": 31, "community_name": "Lovable Design System", "source_file": "awesome-design-md/design-md/lovable/README.md", "file_type": "document", "degree": 0}, {"id": "minimax_design_system", "label": "Minimax Design System", "color": {"background": "#9C755F", "border": "#9C755F", "highlight": {"background": "#ffffff", "border": "#9C755F"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Minimax Design System", "community": 8, "community_name": "Open Source AI Models", "source_file": "awesome-design-md/design-md/minimax/README.md", "file_type": "document", "degree": 1}, {"id": "mintlify_design_system", "label": "Mintlify Design System", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Mintlify Design System", "community": 32, "community_name": "Mintlify Design System", "source_file": "awesome-design-md/design-md/mintlify/README.md", "file_type": "document", "degree": 0}, {"id": "miro_design_system", "label": "Miro Design System", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Miro Design System", "community": 33, "community_name": "Miro Design System", "source_file": "awesome-design-md/design-md/miro/README.md", "file_type": "document", "degree": 0}, {"id": "mistral_design_system", "label": "Mistral AI Design System", "color": {"background": "#9C755F", "border": "#9C755F", "highlight": {"background": "#ffffff", "border": "#9C755F"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Mistral AI Design System", "community": 8, "community_name": "Open Source AI Models", "source_file": "awesome-design-md/design-md/mistral.ai/README.md", "file_type": "document", "degree": 1}, {"id": "mongodb_design_system", "label": "MongoDB Design System", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "MongoDB Design System", "community": 34, "community_name": "MongoDB Design System", "source_file": "awesome-design-md/design-md/mongodb/README.md", "file_type": "document", "degree": 0}, {"id": "notion_design_system", "label": "Notion Design System", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Notion Design System", "community": 1, "community_name": "Productivity SaaS Tools", "source_file": "awesome-design-md/design-md/notion/README.md", "file_type": "document", "degree": 1}, {"id": "nvidia_design_system", "label": "NVIDIA Design System", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "NVIDIA Design System", "community": 35, "community_name": "NVIDIA Design System", "source_file": "awesome-design-md/design-md/nvidia/README.md", "file_type": "document", "degree": 0}, {"id": "ollama_design_system", "label": "Ollama Design System", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Ollama Design System", "community": 11, "community_name": "AI Model Hosting", "source_file": "awesome-design-md/design-md/ollama/README.md", "file_type": "document", "degree": 1}, {"id": "opencode_design_system", "label": "OpenCode AI Design System", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "OpenCode AI Design System", "community": 36, "community_name": "OpenCode AI Design System", "source_file": "awesome-design-md/design-md/opencode.ai/README.md", "file_type": "document", "degree": 0}, {"id": "pinterest_design_system", "label": "Pinterest Design System", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Pinterest Design System", "community": 37, "community_name": "Pinterest Design System", "source_file": "awesome-design-md/design-md/pinterest/README.md", "file_type": "document", "degree": 0}, {"id": "posthog_design_system", "label": "PostHog Design System", "color": {"background": "#9C755F", "border": "#9C755F", "highlight": {"background": "#ffffff", "border": "#9C755F"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "PostHog Design System", "community": 38, "community_name": "PostHog Design System", "source_file": "awesome-design-md/design-md/posthog/README.md", "file_type": "document", "degree": 0}, {"id": "raycast_design_system", "label": "Raycast Design System", "color": {"background": "#BAB0AC", "border": "#BAB0AC", "highlight": {"background": "#ffffff", "border": "#BAB0AC"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Raycast Design System", "community": 39, "community_name": "Raycast Design System", "source_file": "awesome-design-md/design-md/raycast/README.md", "file_type": "document", "degree": 0}, {"id": "renault_design_system", "label": "Renault Design System", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Renault Design System", "community": 3, "community_name": "European Automotive", "source_file": "awesome-design-md/design-md/renault/README.md", "file_type": "document", "degree": 1}, {"id": "replicate_design_system", "label": "Replicate Design System", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Replicate Design System", "community": 11, "community_name": "AI Model Hosting", "source_file": "awesome-design-md/design-md/replicate/README.md", "file_type": "document", "degree": 1}, {"id": "resend_design_system", "label": "Resend Design System", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Resend Design System", "community": 40, "community_name": "Resend Design System", "source_file": "awesome-design-md/design-md/resend/README.md", "file_type": "document", "degree": 0}, {"id": "revolut_design_system", "label": "Revolut Design System", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Revolut Design System", "community": 4, "community_name": "Fintech & Crypto", "source_file": "awesome-design-md/design-md/revolut/README.md", "file_type": "document", "degree": 1}, {"id": "runwayml_design_system", "label": "RunwayML Design System", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "RunwayML Design System", "community": 41, "community_name": "RunwayML Design System", "source_file": "awesome-design-md/design-md/runwayml/README.md", "file_type": "document", "degree": 0}, {"id": "sanity_design_system", "label": "Sanity Design System", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Sanity Design System", "community": 42, "community_name": "Sanity Design System", "source_file": "awesome-design-md/design-md/sanity/README.md", "file_type": "document", "degree": 0}, {"id": "semrush_design_system", "label": "Semrush Design System", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Semrush Design System", "community": 43, "community_name": "Semrush Design System", "source_file": "awesome-design-md/design-md/semrush/README.md", "file_type": "document", "degree": 0}, {"id": "sentry_design_system", "label": "Sentry Design System", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Sentry Design System", "community": 44, "community_name": "Sentry Design System", "source_file": "awesome-design-md/design-md/sentry/README.md", "file_type": "document", "degree": 0}, {"id": "spacex_design_system", "label": "SpaceX Design System", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "SpaceX Design System", "community": 2, "community_name": "Aerospace & EV Brands", "source_file": "awesome-design-md/design-md/spacex/README.md", "file_type": "document", "degree": 1}, {"id": "spotify_design_system", "label": "Spotify Design System", "color": {"background": "#BAB0AC", "border": "#BAB0AC", "highlight": {"background": "#ffffff", "border": "#BAB0AC"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Spotify Design System", "community": 9, "community_name": "Consumer Entertainment", "source_file": "awesome-design-md/design-md/spotify/README.md", "file_type": "document", "degree": 1}, {"id": "stripe_design_system", "label": "Stripe Design System", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Stripe Design System", "community": 6, "community_name": "Developer Infrastructure", "source_file": "awesome-design-md/design-md/stripe/README.md", "file_type": "document", "degree": 1}, {"id": "supabase_design_system", "label": "Supabase Design System", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Supabase Design System", "community": 6, "community_name": "Developer Infrastructure", "source_file": "awesome-design-md/design-md/supabase/README.md", "file_type": "document", "degree": 1}, {"id": "superhuman_design_system", "label": "Superhuman Design System", "color": {"background": "#BAB0AC", "border": "#BAB0AC", "highlight": {"background": "#ffffff", "border": "#BAB0AC"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Superhuman Design System", "community": 9, "community_name": "Consumer Entertainment", "source_file": "awesome-design-md/design-md/superhuman/README.md", "file_type": "document", "degree": 1}, {"id": "tesla_design_system", "label": "Tesla Design System", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Tesla Design System", "community": 2, "community_name": "Aerospace & EV Brands", "source_file": "awesome-design-md/design-md/tesla/README.md", "file_type": "document", "degree": 1}, {"id": "togetherai_design_system", "label": "Together AI Design System", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Together AI Design System", "community": 10, "community_name": "Cutting-Edge AI Labs", "source_file": "awesome-design-md/design-md/together.ai/README.md", "file_type": "document", "degree": 1}, {"id": "uber_design_system", "label": "Uber Design System", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Uber Design System", "community": 45, "community_name": "Uber Design System", "source_file": "awesome-design-md/design-md/uber/README.md", "file_type": "document", "degree": 0}, {"id": "vercel_design_system", "label": "Vercel Design System", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Vercel Design System", "community": 5, "community_name": "Web Dev Platforms", "source_file": "awesome-design-md/design-md/vercel/README.md", "file_type": "document", "degree": 1}, {"id": "voltagent_design_system", "label": "VoltAgent Design System", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "VoltAgent Design System", "community": 46, "community_name": "VoltAgent Design System", "source_file": "awesome-design-md/design-md/voltagent/README.md", "file_type": "document", "degree": 0}, {"id": "warp_design_system", "label": "Warp Design System", "color": {"background": "#FF9DA7", "border": "#FF9DA7", "highlight": {"background": "#ffffff", "border": "#FF9DA7"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Warp Design System", "community": 47, "community_name": "Warp Design System", "source_file": "awesome-design-md/design-md/warp/README.md", "file_type": "document", "degree": 0}, {"id": "webflow_design_system", "label": "Webflow Design System", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "Webflow Design System", "community": 5, "community_name": "Web Dev Platforms", "source_file": "awesome-design-md/design-md/webflow/README.md", "file_type": "document", "degree": 1}, {"id": "wise_design_system", "label": "Wise Design System", "color": {"background": "#9C755F", "border": "#9C755F", "highlight": {"background": "#ffffff", "border": "#9C755F"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Wise Design System", "community": 48, "community_name": "Wise Design System", "source_file": "awesome-design-md/design-md/wise/README.md", "file_type": "document", "degree": 0}, {"id": "xai_design_system", "label": "xAI Design System", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 25.0, "font": {"size": 12, "color": "#ffffff"}, "title": "xAI Design System", "community": 10, "community_name": "Cutting-Edge AI Labs", "source_file": "awesome-design-md/design-md/x.ai/README.md", "file_type": "document", "degree": 1}, {"id": "zapier_design_system", "label": "Zapier Design System", "color": {"background": "#BAB0AC", "border": "#BAB0AC", "highlight": {"background": "#ffffff", "border": "#BAB0AC"}}, "size": 10.0, "font": {"size": 0, "color": "#ffffff"}, "title": "Zapier Design System", "community": 49, "community_name": "Zapier Design System", "source_file": "awesome-design-md/design-md/zapier/README.md", "file_type": "document", "degree": 0}];
+const RAW_EDGES = [{"from": "readme_awesome_design_md", "to": "concept_design_md_format", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "concept_design_md_format", "to": "concept_agents_md", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "brand_bmw", "to": "brand_ferrari", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "brand_cohere", "to": "brand_elevenlabs", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "brand_hashicorp", "to": "brand_ibm", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "kraken_design_system", "to": "revolut_design_system", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "lamborghini_design_system", "to": "renault_design_system", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "linear_design_system", "to": "notion_design_system", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "minimax_design_system", "to": "mistral_design_system", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "ollama_design_system", "to": "replicate_design_system", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "spacex_design_system", "to": "tesla_design_system", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "spotify_design_system", "to": "superhuman_design_system", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "stripe_design_system", "to": "supabase_design_system", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "togetherai_design_system", "to": "xai_design_system", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "vercel_design_system", "to": "webflow_design_system", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}];
+const LEGEND = [{"cid": 0, "color": "#4E79A7", "label": "DESIGN.md Format Spec", "count": 3}, {"cid": 1, "color": "#F28E2B", "label": "Productivity SaaS Tools", "count": 2}, {"cid": 2, "color": "#E15759", "label": "Aerospace &amp; EV Brands", "count": 2}, {"cid": 3, "color": "#76B7B2", "label": "European Automotive", "count": 2}, {"cid": 4, "color": "#59A14F", "label": "Fintech &amp; Crypto", "count": 2}, {"cid": 5, "color": "#EDC948", "label": "Web Dev Platforms", "count": 2}, {"cid": 6, "color": "#B07AA1", "label": "Developer Infrastructure", "count": 2}, {"cid": 7, "color": "#FF9DA7", "label": "Luxury Automotive", "count": 2}, {"cid": 8, "color": "#9C755F", "label": "Open Source AI Models", "count": 2}, {"cid": 9, "color": "#BAB0AC", "label": "Consumer Entertainment", "count": 2}, {"cid": 10, "color": "#4E79A7", "label": "Cutting-Edge AI Labs", "count": 2}, {"cid": 11, "color": "#F28E2B", "label": "AI Model Hosting", "count": 2}, {"cid": 12, "color": "#E15759", "label": "AI Platform Design", "count": 2}, {"cid": 13, "color": "#76B7B2", "label": "Enterprise Technology", "count": 2}, {"cid": 14, "color": "#59A14F", "label": "Contribution Guidelines", "count": 1}, {"cid": 15, "color": "#EDC948", "label": "Google Stitch", "count": 1}, {"cid": 16, "color": "#B07AA1", "label": "VoltAgent AI Agent Framework", "count": 1}, {"cid": 17, "color": "#FF9DA7", "label": "Airbnb Design System", "count": 1}, {"cid": 18, "color": "#9C755F", "label": "Airtable Design System", "count": 1}, {"cid": 19, "color": "#BAB0AC", "label": "Apple Design System", "count": 1}, {"cid": 20, "color": "#4E79A7", "label": "Cal.com Design System", "count": 1}, {"cid": 21, "color": "#F28E2B", "label": "Claude (Anthropic) Design System", "count": 1}, {"cid": 22, "color": "#E15759", "label": "Clay Design System", "count": 1}, {"cid": 23, "color": "#76B7B2", "label": "ClickHouse Design System", "count": 1}, {"cid": 24, "color": "#59A14F", "label": "Coinbase Design System", "count": 1}, {"cid": 25, "color": "#EDC948", "label": "Composio Design System", "count": 1}, {"cid": 26, "color": "#B07AA1", "label": "Cursor Design System", "count": 1}, {"cid": 27, "color": "#FF9DA7", "label": "Expo Design System", "count": 1}, {"cid": 28, "color": "#9C755F", "label": "Figma Design System", "count": 1}, {"cid": 29, "color": "#BAB0AC", "label": "Framer Design System", "count": 1}, {"cid": 30, "color": "#4E79A7", "label": "Intercom Design System", "count": 1}, {"cid": 31, "color": "#F28E2B", "label": "Lovable Design System", "count": 1}, {"cid": 32, "color": "#E15759", "label": "Mintlify Design System", "count": 1}, {"cid": 33, "color": "#76B7B2", "label": "Miro Design System", "count": 1}, {"cid": 34, "color": "#59A14F", "label": "MongoDB Design System", "count": 1}, {"cid": 35, "color": "#EDC948", "label": "NVIDIA Design System", "count": 1}, {"cid": 36, "color": "#B07AA1", "label": "OpenCode AI Design System", "count": 1}, {"cid": 37, "color": "#FF9DA7", "label": "Pinterest Design System", "count": 1}, {"cid": 38, "color": "#9C755F", "label": "PostHog Design System", "count": 1}, {"cid": 39, "color": "#BAB0AC", "label": "Raycast Design System", "count": 1}, {"cid": 40, "color": "#4E79A7", "label": "Resend Design System", "count": 1}, {"cid": 41, "color": "#F28E2B", "label": "RunwayML Design System", "count": 1}, {"cid": 42, "color": "#E15759", "label": "Sanity Design System", "count": 1}, {"cid": 43, "color": "#76B7B2", "label": "Semrush Design System", "count": 1}, {"cid": 44, "color": "#59A14F", "label": "Sentry Design System", "count": 1}, {"cid": 45, "color": "#EDC948", "label": "Uber Design System", "count": 1}, {"cid": 46, "color": "#B07AA1", "label": "VoltAgent Design System", "count": 1}, {"cid": 47, "color": "#FF9DA7", "label": "Warp Design System", "count": 1}, {"cid": 48, "color": "#9C755F", "label": "Wise Design System", "count": 1}, {"cid": 49, "color": "#BAB0AC", "label": "Zapier Design System", "count": 1}];
+
+// HTML-escape helper — prevents XSS when injecting graph data into innerHTML
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// Build vis datasets
+const nodesDS = new vis.DataSet(RAW_NODES.map(n => ({
+  id: n.id, label: n.label, color: n.color, size: n.size,
+  font: n.font, title: n.title,
+  _community: n.community, _community_name: n.community_name,
+  _source_file: n.source_file, _file_type: n.file_type, _degree: n.degree,
+})));
+
+const edgesDS = new vis.DataSet(RAW_EDGES.map((e, i) => ({
+  id: i, from: e.from, to: e.to,
+  label: '',
+  title: e.title,
+  dashes: e.dashes,
+  width: e.width,
+  color: e.color,
+  arrows: { to: { enabled: true, scaleFactor: 0.5 } },
+})));
+
+const container = document.getElementById('graph');
+const network = new vis.Network(container, { nodes: nodesDS, edges: edgesDS }, {
+  physics: {
+    enabled: true,
+    solver: 'forceAtlas2Based',
+    forceAtlas2Based: {
+      gravitationalConstant: -60,
+      centralGravity: 0.005,
+      springLength: 120,
+      springConstant: 0.08,
+      damping: 0.4,
+      avoidOverlap: 0.8,
+    },
+    stabilization: { iterations: 200, fit: true },
+  },
+  interaction: {
+    hover: true,
+    tooltipDelay: 100,
+    hideEdgesOnDrag: true,
+    navigationButtons: false,
+    keyboard: false,
+  },
+  nodes: { shape: 'dot', borderWidth: 1.5 },
+  edges: { smooth: { type: 'continuous', roundness: 0.2 }, selectionWidth: 3 },
+});
+
+network.once('stabilizationIterationsDone', () => {
+  network.setOptions({ physics: { enabled: false } });
+});
+
+function showInfo(nodeId) {
+  const n = nodesDS.get(nodeId);
+  if (!n) return;
+  const neighborIds = network.getConnectedNodes(nodeId);
+  const neighborItems = neighborIds.map(nid => {
+    const nb = nodesDS.get(nid);
+    const color = nb ? nb.color.background : '#555';
+    return `<span class="neighbor-link" style="border-left-color:${esc(color)}" onclick="focusNode(${JSON.stringify(nid)})">${esc(nb ? nb.label : nid)}</span>`;
+  }).join('');
+  document.getElementById('info-content').innerHTML = `
+    <div class="field"><b>${esc(n.label)}</b></div>
+    <div class="field">Type: ${esc(n._file_type || 'unknown')}</div>
+    <div class="field">Community: ${esc(n._community_name)}</div>
+    <div class="field">Source: ${esc(n._source_file || '-')}</div>
+    <div class="field">Degree: ${n._degree}</div>
+    ${neighborIds.length ? `<div class="field" style="margin-top:8px;color:#aaa;font-size:11px">Neighbors (${neighborIds.length})</div><div id="neighbors-list">${neighborItems}</div>` : ''}
+  `;
+}
+
+function focusNode(nodeId) {
+  network.focus(nodeId, { scale: 1.4, animation: true });
+  network.selectNodes([nodeId]);
+  showInfo(nodeId);
+}
+
+// Track hovered node — hover detection is more reliable than click params
+let hoveredNodeId = null;
+network.on('hoverNode', params => {
+  hoveredNodeId = params.node;
+  container.style.cursor = 'pointer';
+});
+network.on('blurNode', () => {
+  hoveredNodeId = null;
+  container.style.cursor = 'default';
+});
+container.addEventListener('click', () => {
+  if (hoveredNodeId !== null) {
+    showInfo(hoveredNodeId);
+    network.selectNodes([hoveredNodeId]);
+  }
+});
+network.on('click', params => {
+  if (params.nodes.length > 0) {
+    showInfo(params.nodes[0]);
+  } else if (hoveredNodeId === null) {
+    document.getElementById('info-content').innerHTML = '<span class="empty">Click a node to inspect it</span>';
+  }
+});
+
+const searchInput = document.getElementById('search');
+const searchResults = document.getElementById('search-results');
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.toLowerCase().trim();
+  searchResults.innerHTML = '';
+  if (!q) { searchResults.style.display = 'none'; return; }
+  const matches = RAW_NODES.filter(n => n.label.toLowerCase().includes(q)).slice(0, 20);
+  if (!matches.length) { searchResults.style.display = 'none'; return; }
+  searchResults.style.display = 'block';
+  matches.forEach(n => {
+    const el = document.createElement('div');
+    el.className = 'search-item';
+    el.textContent = n.label;
+    el.style.borderLeft = `3px solid ${n.color.background}`;
+    el.style.paddingLeft = '8px';
+    el.onclick = () => {
+      network.focus(n.id, { scale: 1.5, animation: true });
+      network.selectNodes([n.id]);
+      showInfo(n.id);
+      searchResults.style.display = 'none';
+      searchInput.value = '';
+    };
+    searchResults.appendChild(el);
+  });
+});
+document.addEventListener('click', e => {
+  if (!searchResults.contains(e.target) && e.target !== searchInput)
+    searchResults.style.display = 'none';
+});
+
+const hiddenCommunities = new Set();
+const legendEl = document.getElementById('legend');
+LEGEND.forEach(c => {
+  const item = document.createElement('div');
+  item.className = 'legend-item';
+  item.innerHTML = `<div class="legend-dot" style="background:${c.color}"></div>
+    <span class="legend-label">${c.label}</span>
+    <span class="legend-count">${c.count}</span>`;
+  item.onclick = () => {
+    if (hiddenCommunities.has(c.cid)) {
+      hiddenCommunities.delete(c.cid);
+      item.classList.remove('dimmed');
+    } else {
+      hiddenCommunities.add(c.cid);
+      item.classList.add('dimmed');
+    }
+    const updates = RAW_NODES
+      .filter(n => n.community === c.cid)
+      .map(n => ({ id: n.id, hidden: hiddenCommunities.has(c.cid) }));
+    nodesDS.update(updates);
+  };
+  legendEl.appendChild(item);
+});
+</script>
+<script>
+// Render hyperedges as shaded regions
+const hyperedges = [{"id": "ai_llm_design_systems", "label": "AI/LLM Platform Design Systems", "nodes": ["brand_claude", "brand_cohere", "brand_elevenlabs", "concept_voltagent"], "relation": "participate_in", "confidence": "INFERRED", "confidence_score": 0.8, "source_file": "awesome-design-md/README.md"}, {"id": "automotive_design_systems", "label": "Automotive Brand Design Systems", "nodes": ["brand_bmw", "brand_ferrari"], "relation": "participate_in", "confidence": "INFERRED", "confidence_score": 0.85, "source_file": "awesome-design-md/README.md"}, {"id": "ai_platform_design_systems_2", "label": "AI Platform Design Systems", "nodes": ["mistral_design_system", "minimax_design_system", "ollama_design_system", "replicate_design_system", "opencode_design_system"], "relation": "participate_in", "confidence": "INFERRED", "confidence_score": 0.8, "source_file": "awesome-design-md/design-md/mistral.ai/README.md"}, {"id": "fintech_design_systems_2", "label": "Fintech Design Systems", "nodes": ["revolut_design_system", "kraken_design_system", "resend_design_system"], "relation": "participate_in", "confidence": "INFERRED", "confidence_score": 0.7, "source_file": "awesome-design-md/design-md/revolut/README.md"}, {"id": "ai_platform_design_systems_3", "label": "AI Platform Design Systems", "nodes": ["runwayml_design_system", "togetherai_design_system", "xai_design_system"], "relation": "participate_in", "confidence": "INFERRED", "confidence_score": 0.8, "source_file": "awesome-design-md/design-md/runwayml/README.md"}, {"id": "developer_tool_design_systems", "label": "Developer Tool Design Systems", "nodes": ["sentry_design_system", "supabase_design_system", "vercel_design_system"], "relation": "participate_in", "confidence": "INFERRED", "confidence_score": 0.8, "source_file": "awesome-design-md/design-md/sentry/README.md"}, {"id": "fintech_design_systems_3", "label": "Fintech Design Systems", "nodes": ["stripe_design_system", "wise_design_system", "zapier_design_system"], "relation": "participate_in", "confidence": "INFERRED", "confidence_score": 0.75, "source_file": "awesome-design-md/design-md/stripe/README.md"}];
+function drawHyperedges() {
+    const canvas = network.canvas.frame.canvas;
+    const ctx = canvas.getContext('2d');
+    hyperedges.forEach(h => {
+        const positions = h.nodes
+            .map(nid => network.getPositions([nid])[nid])
+            .filter(p => p !== undefined);
+        if (positions.length < 2) return;
+        // Draw convex hull as filled polygon
+        ctx.save();
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle = '#6366f1';
+        ctx.strokeStyle = '#6366f1';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        const scale = network.getScale();
+        const offset = network.getViewPosition();
+        const toCanvas = (p) => ({
+            x: (p.x - offset.x) * scale + canvas.width / 2,
+            y: (p.y - offset.y) * scale + canvas.height / 2
+        });
+        const pts = positions.map(toCanvas);
+        // Expand hull slightly
+        const cx = pts.reduce((s, p) => s + p.x, 0) / pts.length;
+        const cy = pts.reduce((s, p) => s + p.y, 0) / pts.length;
+        const expanded = pts.map(p => ({
+            x: cx + (p.x - cx) * 1.15,
+            y: cy + (p.y - cy) * 1.15
+        }));
+        ctx.moveTo(expanded[0].x, expanded[0].y);
+        expanded.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 0.4;
+        ctx.stroke();
+        // Label
+        ctx.globalAlpha = 0.8;
+        ctx.fillStyle = '#4f46e5';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(h.label, cx, cy - 5);
+        ctx.restore();
+    });
+}
+network.on('afterDrawing', drawHyperedges);
+</script>
+</body>
+</html>

@@ -1,0 +1,361 @@
+{
+  "nodes": [
+    {
+      "id": "readme_awesome_design_md",
+      "label": "Awesome DESIGN.md Repository",
+      "file_type": "document",
+      "source_file": "awesome-design-md/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": "VoltAgent",
+      "contributor": null
+    },
+    {
+      "id": "contributing_awesome_design_md",
+      "label": "Contributing Guide",
+      "file_type": "document",
+      "source_file": "awesome-design-md/CONTRIBUTING.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": "VoltAgent",
+      "contributor": null
+    },
+    {
+      "id": "concept_design_md_format",
+      "label": "DESIGN.md Format",
+      "file_type": "document",
+      "source_file": "awesome-design-md/README.md",
+      "source_location": "What is DESIGN.md?",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "concept_stitch_google",
+      "label": "Google Stitch",
+      "file_type": "document",
+      "source_file": "awesome-design-md/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "concept_agents_md",
+      "label": "AGENTS.md Format",
+      "file_type": "document",
+      "source_file": "awesome-design-md/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "concept_voltagent",
+      "label": "VoltAgent AI Agent Framework",
+      "file_type": "document",
+      "source_file": "awesome-design-md/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_airbnb",
+      "label": "Airbnb Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/airbnb/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_airtable",
+      "label": "Airtable Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/airtable/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_apple",
+      "label": "Apple Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/apple/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_bmw",
+      "label": "BMW Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/bmw/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_cal",
+      "label": "Cal.com Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/cal/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_claude",
+      "label": "Claude (Anthropic) Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/claude/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_clay",
+      "label": "Clay Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/clay/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_clickhouse",
+      "label": "ClickHouse Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/clickhouse/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_cohere",
+      "label": "Cohere Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/cohere/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_coinbase",
+      "label": "Coinbase Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/coinbase/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_composio",
+      "label": "Composio Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/composio/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_cursor",
+      "label": "Cursor Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/cursor/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_elevenlabs",
+      "label": "ElevenLabs Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/elevenlabs/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_expo",
+      "label": "Expo Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/expo/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_ferrari",
+      "label": "Ferrari Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/ferrari/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_figma",
+      "label": "Figma Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/figma/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_framer",
+      "label": "Framer Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/framer/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_hashicorp",
+      "label": "HashiCorp Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/hashicorp/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "brand_ibm",
+      "label": "IBM Design System",
+      "file_type": "document",
+      "source_file": "awesome-design-md/design-md/ibm/README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "readme_awesome_design_md",
+      "target": "concept_design_md_format",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "awesome-design-md/README.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "brand_bmw",
+      "target": "brand_ferrari",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "awesome-design-md/README.md",
+      "source_location": null,
+      "weight": 0.85
+    },
+    {
+      "source": "brand_cohere",
+      "target": "brand_elevenlabs",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "awesome-design-md/README.md",
+      "source_location": null,
+      "weight": 0.75
+    },
+    {
+      "source": "concept_design_md_format",
+      "target": "concept_agents_md",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "awesome-design-md/README.md",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "brand_ibm",
+      "target": "brand_hashicorp",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "awesome-design-md/README.md",
+      "source_location": null,
+      "weight": 0.7
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "ai_llm_design_systems",
+      "label": "AI/LLM Platform Design Systems",
+      "nodes": [
+        "brand_claude",
+        "brand_cohere",
+        "brand_elevenlabs",
+        "concept_voltagent"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "awesome-design-md/README.md"
+    },
+    {
+      "id": "automotive_design_systems",
+      "label": "Automotive Brand Design Systems",
+      "nodes": [
+        "brand_bmw",
+        "brand_ferrari"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "awesome-design-md/README.md"
+    }
+  ],
+  "input_tokens": 4200,
+  "output_tokens": 3800
+}
