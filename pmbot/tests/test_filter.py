@@ -12,7 +12,7 @@ from src.scanner.base import Market
 def _market(
     *,
     market_id: str = "m1",
-    yes_price: float = 0.5,
+    yes_probability: float = 0.5,
     category: str = "politics",
     close_time: datetime | None = None,
     volume_usd: float = 50_000.0,
@@ -22,9 +22,9 @@ def _market(
         close_time = datetime.now(timezone.utc) + timedelta(days=10)
     return Market(
         id=market_id,
-        title="Test market",
+        question="Will X happen?",
         platform=platform,
-        yes_price=yes_price,
+        yes_probability=yes_probability,
         close_time=close_time,
         volume_usd=volume_usd,
         category=category,
@@ -40,26 +40,27 @@ class TestMarketFilter:
         assert len(result) == 1
 
     def test_blocks_extreme_probability_high(self):
-        result = self.f.run([_market(yes_price=0.98)])
+        result = self.f.run([_market(yes_probability=0.98)])
         assert len(result) == 0
 
     def test_blocks_extreme_probability_low(self):
-        result = self.f.run([_market(yes_price=0.02)])
+        result = self.f.run([_market(yes_probability=0.02)])
         assert len(result) == 0
 
     def test_blocks_excluded_category(self):
-        result = self.f.run([_market(category="crypto")])
+        # "test" is in blocked_categories in default.yaml
+        result = self.f.run([_market(category="test")])
         assert len(result) == 0
 
     def test_allows_boundary_probability(self):
-        # Exactly at the boundary should still pass
-        result = self.f.run([_market(yes_price=0.05)])
+        # 0.05 is the min; should pass
+        result = self.f.run([_market(yes_probability=0.05)])
         assert len(result) == 1
 
     def test_multiple_markets_partial_pass(self):
         markets = [
             _market(market_id="good"),
-            _market(market_id="bad", yes_price=0.99),
+            _market(market_id="bad", yes_probability=0.99),
         ]
         result = self.f.run(markets)
         assert len(result) == 1

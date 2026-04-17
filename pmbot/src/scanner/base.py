@@ -22,6 +22,8 @@ class Market(BaseModel):
     yes_probability: float = Field(ge=0.0, le=1.0)
     volume_usd: float = 0.0
     liquidity_usd: float = 0.0
+    spread: float | None = None           # bid/ask spread as fraction; None if not provided
+    orderbook_depth: float | None = None  # total resting liquidity in USD; None if not provided
     close_time: datetime | None = None
     raw: dict[str, Any] = Field(default_factory=dict, exclude=True)
 

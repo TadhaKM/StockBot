@@ -1,0 +1,22 @@
+# Trading rules — all thresholds that gate whether a market, edge, or trade is valid.
+# Load with: from src.config.rules import load_rules
+
+market:
+  min_volume: 500            # minimum 24h USD volume
+  max_spread: 0.03           # maximum bid/ask spread (fraction of price)
+  min_orderbook_depth: 100   # minimum orderbook depth in USD
+  max_days_to_expiry: 30     # markets closing beyond this are skipped
+
+edge:
+  min_edge: 0.05             # minimum |p_model - p_market| to consider trading
+  min_confidence: 0.6        # minimum model confidence score (0–1)
+
+sizing:
+  kelly_fraction: 0.25       # fractional Kelly multiplier
+  max_position_size: 0.05    # hard cap: max fraction of bankroll per single trade
+  max_total_exposure: 0.2    # halt new trades if deployed capital exceeds this fraction
+  max_daily_loss: 0.1        # halt all trading if daily loss exceeds this fraction
+  max_drawdown: 0.08         # halt all trading if drawdown from peak exceeds this fraction
+
+execution:
+  max_slippage: 0.02         # maximum acceptable slippage fraction before rejecting fill
