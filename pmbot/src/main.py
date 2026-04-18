@@ -2,9 +2,13 @@
 pmbot entry point.
 
 Usage:
-    python -m src.main run-once                  # single cycle, then exit
-    python -m src.main loop                      # every cycle_interval_minutes
-    python -m src.main run-once --config path    # override config file
+    python -m src.main run-once         # single cycle (paper trades)
+    python -m src.main loop             # scheduled cycles (paper trades)
+    python -m src.main observe-once     # single cycle, NO trades -- logs candidates
+    python -m src.main observe-loop     # scheduled, NO trades -- logs candidates
+
+Observe mode writes would-be trades to data/logs/candidate_trades.jsonl
+with timestamp, prices, edge, confidence, and any reject reasons.
 """
 from __future__ import annotations
 
@@ -30,48 +34,80 @@ def _bootstrap(config: str) -> None:
     setup_logging(level=cfg.logging.level, log_file=cfg.logging.file, json=cfg.logging.json)
 
 
+def _run_single(observe: bool) -> None:
+    from src.orchestrator.bot import Bot
+
+    bot = Bot(observe=observe)
+    try:
+        report = asyncio.run(bot.run_cycle())
+    except Exception as exc:
+        logger.exception("cycle.crashed", observe=observe, error=str(exc))
+        raise typer.Exit(code=1)
+
+    label = "observe" if observe else "cycle"
+    typer.echo(f"{label} complete: {report.as_dict()}")
+
+
+def _run_loop(observe: bool) -> None:
+    from src.config import cfg
+    from src.orchestrator.bot import Bot
+    from apscheduler.schedulers.asyncio import AsyncIOScheduler
+    import logging
+
+    bot = Bot(observe=observe)
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(bot.run_cycle, "interval", minutes=cfg.bot.cycle_interval_minutes)
+    scheduler.start()
+    logging.getLogger("apscheduler").setLevel(logging.WARNING)
+    logger.info(
+        "loop.started",
+        interval_min=cfg.bot.cycle_interval_minutes,
+        observe=observe,
+    )
+    try:
+        asyncio.get_event_loop().run_forever()
+    except KeyboardInterrupt:
+        logger.info("loop.stopped")
+
+
+# ── Trading commands ────────────────────────────────────────────────────────
+
 @app.command("run-once")
 def run_once(
     config: Annotated[str, typer.Option("--config", help="Override config file path.")] = "",
 ) -> None:
-    """Run a single pipeline cycle and exit."""
+    """Run a single pipeline cycle and exit (paper trades enabled)."""
     _bootstrap(config)
-    from src.orchestrator.bot import Bot
-
-    bot = Bot()
-    try:
-        report = asyncio.run(bot.run_cycle())
-    except Exception as exc:
-        logger.exception("run_once.crashed", error=str(exc))
-        raise typer.Exit(code=1)
-
-    typer.echo(f"cycle complete: {report.as_dict()}")
+    _run_single(observe=False)
 
 
 @app.command("loop")
 def loop(
     config: Annotated[str, typer.Option("--config", help="Override config file path.")] = "",
 ) -> None:
-    """Run cycles on a schedule until interrupted."""
+    """Run cycles on a schedule until interrupted (paper trades enabled)."""
     _bootstrap(config)
+    _run_loop(observe=False)
 
-    from src.config import cfg
-    from src.orchestrator.bot import Bot
 
-    bot = Bot()
+# ── Observation commands ────────────────────────────────────────────────────
 
-    from apscheduler.schedulers.asyncio import AsyncIOScheduler
-    import logging
+@app.command("observe-once")
+def observe_once(
+    config: Annotated[str, typer.Option("--config", help="Override config file path.")] = "",
+) -> None:
+    """Run one cycle WITHOUT executing -- log candidate trades to JSONL."""
+    _bootstrap(config)
+    _run_single(observe=True)
 
-    scheduler = AsyncIOScheduler()
-    scheduler.add_job(bot.run_cycle, "interval", minutes=cfg.bot.cycle_interval_minutes)
-    scheduler.start()
-    logging.getLogger("apscheduler").setLevel(logging.WARNING)
-    logger.info("loop.started", interval_min=cfg.bot.cycle_interval_minutes)
-    try:
-        asyncio.get_event_loop().run_forever()
-    except KeyboardInterrupt:
-        logger.info("loop.stopped")
+
+@app.command("observe-loop")
+def observe_loop(
+    config: Annotated[str, typer.Option("--config", help="Override config file path.")] = "",
+) -> None:
+    """Run cycles on a schedule WITHOUT executing -- log candidates to JSONL."""
+    _bootstrap(config)
+    _run_loop(observe=True)
 
 
 if __name__ == "__main__":

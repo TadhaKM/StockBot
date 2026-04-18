@@ -33,6 +33,9 @@ from src.scanner.polymarket import PolymarketScanner
 logger = get_logger(__name__)
 
 
+_CANDIDATE_LOG = Path("data/logs/candidate_trades.jsonl")
+
+
 @dataclass
 class CycleReport:
     scanned: int = 0
@@ -42,6 +45,7 @@ class CycleReport:
     portfolio_passed: int = 0
     book_passed: int = 0
     filled: int = 0
+    candidates_logged: int = 0
     halted_by_portfolio: bool = False
     errors: dict[str, int] = field(default_factory=dict)
 
@@ -57,15 +61,69 @@ class CycleReport:
             "portfolio_passed": self.portfolio_passed,
             "book_passed": self.book_passed,
             "filled": self.filled,
+            "candidates_logged": self.candidates_logged,
             "halted_by_portfolio": self.halted_by_portfolio,
             "errors": self.errors,
         }
 
 
+class CandidateLogger:
+    """
+    Writes candidate-trade records to data/logs/candidate_trades.jsonl.
+
+    A candidate is any signal-producing market -- regardless of whether it
+    ultimately passed every gate. The record carries the stage it was
+    rejected at (if any) so you can reconstruct every decision the bot
+    would have made in paper mode.
+
+    In non-observe mode the logger is a no-op.
+    """
+
+    def __init__(self, enabled: bool, path: Path = _CANDIDATE_LOG) -> None:
+        self.enabled = enabled
+        self.path = path
+        if enabled:
+            path.parent.mkdir(parents=True, exist_ok=True)
+
+    def write(
+        self,
+        *,
+        market: Market,
+        pred,
+        decision=None,
+        stage_rejected_at: str | None = None,
+        reject_reasons: list[str] | None = None,
+        would_execute: bool = False,
+    ) -> None:
+        if not self.enabled:
+            return
+        entry = {
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "market_id": market.id,
+            "platform": market.platform,
+            "title": market.title,
+            "bid": market.bid,
+            "ask": market.ask,
+            "mid_price": round(market.mid_price, 6),
+            "p_model": round(pred.p_model, 6),
+            "p_market": round(pred.p_market, 6),
+            "edge": round(pred.edge, 6),
+            "confidence": round(pred.confidence, 4),
+            "side": pred.recommended_side,
+            "size_usd": round(decision.size_usd, 2) if decision is not None else None,
+            "stage_rejected_at": stage_rejected_at,
+            "would_execute": would_execute,
+            "reject_reasons": reject_reasons or [],
+        }
+        with self.path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(entry) + "\n")
+
+
 class Bot:
     """Top-level orchestrator. Call `await bot.run_cycle()` each interval."""
 
-    def __init__(self) -> None:
+    def __init__(self, observe: bool = False) -> None:
+        self.observe = observe
         self.scanner_classes = [PolymarketScanner, KalshiScanner]
         self.rules = load_rules()
         self.market_filter = MarketFilter(rules=self.rules)
@@ -75,6 +133,7 @@ class Bot:
             rules=self.rules,
         )
         self.tracker = PerformanceTracker()
+        self.candidate_logger = CandidateLogger(enabled=observe)
 
         if cfg.bot.trading_mode == "live":
             logger.warning(
@@ -83,6 +142,9 @@ class Bot:
                 note="live executor not implemented; using PaperExecutor",
             )
         self.executor = PaperExecutor()
+        if observe:
+            logger.info("bot.observe_mode", note="no trades will be executed",
+                        log=str(_CANDIDATE_LOG))
 
         # Re-hydrate the open-id set from whatever positions the paper
         # engine restored from disk, so duplicate / max-position checks
@@ -157,6 +219,15 @@ class Bot:
             tracker=self.tracker.summary(),
         )
         return report
+
+    # ── Candidate logging (observe mode only) ──────────────────────────────
+
+    def _log_candidate(self, market, pred, **kwargs) -> None:
+        """Forward to CandidateLogger -- safe to call always, no-op off mode."""
+        try:
+            self.candidate_logger.write(market=market, pred=pred, **kwargs)
+        except Exception as exc:
+            logger.warning("candidate.log_failed", market_id=market.id, error=str(exc))
 
     # ── Portfolio snapshot ──────────────────────────────────────────────────
 
@@ -268,6 +339,12 @@ class Bot:
             return
         if not decision.approved:
             logger.info("cycle.skip", market_id=market.id, step="risk", reason=decision.reason)
+            self._log_candidate(
+                market, pred, decision=None,
+                stage_rejected_at="risk",
+                reject_reasons=[decision.reason],
+            )
+            report.candidates_logged += 1
             return
         report.risk_passed += 1
 
@@ -276,12 +353,14 @@ class Bot:
         projected_exposure = (self.executor.total_exposure_usd() + decision.size_usd) / bankroll
         max_exposure = self.rules.sizing.max_total_exposure
         if projected_exposure > max_exposure:
-            logger.info(
-                "cycle.skip",
-                market_id=market.id,
-                step="portfolio",
-                reason=f"projected exposure {projected_exposure:.2%} > max {max_exposure:.2%}",
+            reason = f"projected exposure {projected_exposure:.2%} > max {max_exposure:.2%}"
+            logger.info("cycle.skip", market_id=market.id, step="portfolio", reason=reason)
+            self._log_candidate(
+                market, pred, decision=decision,
+                stage_rejected_at="portfolio",
+                reject_reasons=[reason],
             )
+            report.candidates_logged += 1
             return
         report.portfolio_passed += 1
 
@@ -300,8 +379,34 @@ class Bot:
                 step="orderbook",
                 reason=f"orderbook: {book_check.failures}",
             )
+            self._log_candidate(
+                market, pred, decision=decision,
+                stage_rejected_at="orderbook",
+                reject_reasons=list(book_check.failures),
+            )
+            report.candidates_logged += 1
             return
         report.book_passed += 1
+
+        # In observe mode we stop here -- no executor call, no open-id update.
+        # The candidate is logged as a would-be trade for later review.
+        if self.observe:
+            self._log_candidate(
+                market, pred, decision=decision,
+                stage_rejected_at=None,
+                reject_reasons=[],
+                would_execute=True,
+            )
+            report.candidates_logged += 1
+            logger.info(
+                "cycle.observe",
+                market_id=market.id,
+                edge=round(pred.edge, 4),
+                confidence=pred.confidence,
+                side=pred.recommended_side,
+                size_usd=decision.size_usd,
+            )
+            return
 
         # Execute: limit at our model's fair value -- we'll pay up to what
         # we believe the contract is worth, which is above the current ask

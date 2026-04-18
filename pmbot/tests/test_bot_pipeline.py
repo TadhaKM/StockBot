@@ -124,7 +124,10 @@ class _StubRisk:
 @pytest.fixture
 def bot(tmp_path, monkeypatch):
     """A Bot with tmp-dir paper executor and stubbed dependencies."""
+    from src.orchestrator.bot import CandidateLogger
+
     b = Bot.__new__(Bot)
+    b.observe = False
     b.rules = load_rules()
     b.scanner_classes = []
     b.market_filter = _StubFilter()
@@ -140,6 +143,7 @@ def bot(tmp_path, monkeypatch):
         closed_log=tmp_path / "closed_positions.jsonl",
         stop_file=tmp_path / "STOP",
     )
+    b.candidate_logger = CandidateLogger(enabled=False)
     b._open_ids = set()
     return b
 
@@ -306,3 +310,100 @@ class TestPortfolioGate:
             assert report.filled == 0
         finally:
             os.chdir(original_cwd)
+
+
+# ── Observe mode ─────────────────────────────────────────────────────────────
+
+class TestObserveMode:
+    def _observe_bot(self, bot, tmp_path):
+        """Flip the fixture into observe mode with a tmp candidate log."""
+        from src.orchestrator.bot import CandidateLogger
+        bot.observe = True
+        bot.candidate_logger = CandidateLogger(
+            enabled=True, path=tmp_path / "candidate_trades.jsonl",
+        )
+        return tmp_path / "candidate_trades.jsonl"
+
+    def _wire_trade(self, bot):
+        """Wire stubs so a market passes every gate up to the execute call."""
+        # Strong market -- passes real MarketFilter + has room on the book
+        strong = Market(
+            id="obs-1",
+            title="Observe test market",
+            platform="polymarket",
+            bid=0.60,
+            ask=0.62,
+            volume_usd=100_000,
+            orderbook_depth=10_000,
+            close_time=datetime.now(timezone.utc) + timedelta(days=5),
+        )
+        scanner = _make_scanner("polymarket", markets=[strong])
+        bot.scanner_classes = [scanner]
+        bot.market_filter = _StubFilter(scored=[ScoredMarket(strong, 90.0)])
+        # Strong prediction: passes edge + confidence gates
+        pred = PredictionResult(
+            market_id=strong.id,
+            p_model=0.80, p_market=0.61, confidence=0.75, model_name="stub",
+        )
+        bot.engine = _StubEngine(signal=Signal(prediction=pred, is_signal=True, failures=[]))
+        return strong
+
+    def test_would_be_trade_logged_and_not_executed(self, bot, tmp_path):
+        log_path = self._observe_bot(bot, tmp_path)
+        self._wire_trade(bot)
+
+        report = asyncio.run(bot.run_cycle())
+
+        # Nothing actually executed
+        assert report.filled == 0
+        assert bot.executor.positions == []
+        # But one candidate written
+        assert report.candidates_logged == 1
+        assert log_path.exists()
+        lines = log_path.read_text(encoding="utf-8").strip().split("\n")
+        assert len(lines) == 1
+        entry = __import__("json").loads(lines[0])
+        assert entry["would_execute"] is True
+        assert entry["stage_rejected_at"] is None
+        assert entry["market_id"] == "obs-1"
+        assert entry["edge"] == pytest.approx(0.19)
+        assert entry["confidence"] == 0.75
+        assert entry["side"] == "yes"
+        assert entry["reject_reasons"] == []
+        # Required schema fields
+        for key in ("ts", "bid", "ask", "mid_price", "p_model", "p_market"):
+            assert key in entry
+
+    def test_reject_reasons_recorded_at_risk_stage(self, bot, tmp_path):
+        # A position already open makes RiskManager reject duplicates
+        log_path = self._observe_bot(bot, tmp_path)
+        market = self._wire_trade(bot)
+        bot._open_ids.add(market.id)  # triggers "already holding" rejection
+
+        report = asyncio.run(bot.run_cycle())
+
+        assert report.candidates_logged == 1
+        assert report.filled == 0
+        entry = __import__("json").loads(log_path.read_text().strip())
+        assert entry["would_execute"] is False
+        assert entry["stage_rejected_at"] == "risk"
+        assert entry["reject_reasons"]  # non-empty
+        assert "already holding" in entry["reject_reasons"][0]
+
+    def test_observe_mode_does_not_touch_executor(self, bot, tmp_path):
+        self._observe_bot(bot, tmp_path)
+        self._wire_trade(bot)
+
+        # Swap in an executor that blows up if submit() is called
+        class _FailOnSubmit:
+            positions: list = []
+            def is_halted(self): return False
+            def total_exposure_usd(self): return 0.0
+            async def submit(self, *a, **k):
+                raise AssertionError("submit must not be called in observe mode")
+            def summary(self): return {}
+        bot.executor = _FailOnSubmit()
+
+        report = asyncio.run(bot.run_cycle())
+        assert report.filled == 0
+        assert report.candidates_logged == 1
