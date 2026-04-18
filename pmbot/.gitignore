@@ -23,13 +23,15 @@ data/logs/*.jsonl
 data/logs/*.json
 data/logs/*.log
 data/trades/*.jsonl
+data/trades/*.json
+data/STOP
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-
+.claude/
 # OS
 .DS_Store
 Thumbs.db

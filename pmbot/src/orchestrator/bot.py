@@ -43,6 +43,10 @@ class Bot:
     async def run_cycle(self) -> None:
         logger.info("cycle.start", mode=cfg.bot.trading_mode)
 
+        if self.executor.is_halted():
+            logger.warning("cycle.halted", reason="STOP file present")
+            return
+
         # ── 1. Scan ───────────────────────────────────────────────────────────
         raw_markets = []
         for cls in self.scanner_classes:
@@ -89,7 +93,11 @@ class Bot:
                 side=pred.recommended_side,
                 size_usd=decision.size_usd,
                 limit_price=price,
+                book=book,
             )
+            if trade is None:
+                logger.info("cycle.skip", market_id=market.id, reason="paper fill rejected")
+                continue
             self._open_ids.add(market.id)
 
             self.tracker.record(PredRecord(
@@ -102,4 +110,8 @@ class Bot:
                 model_name=pred.model_name,
             ))
 
-        logger.info("cycle.end", summary=self.tracker.summary())
+        logger.info(
+            "cycle.end",
+            tracker=self.tracker.summary(),
+            paper=self.executor.summary(),
+        )
