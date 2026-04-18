@@ -2,9 +2,14 @@
 Bot orchestrator: wires all modules together and runs one full cycle.
 
 Pipeline:
-    scanner → filter → research → prediction → risk → execution → learning
+    scan -> filter -> research -> predict -> risk -> orderbook -> execute
+
+Every step is wrapped so one failure does not kill the cycle. A per-cycle
+CycleReport captures counts and step-level errors, and is logged at the end.
 """
 from __future__ import annotations
+
+from dataclasses import dataclass, field
 
 from src.config import cfg
 from src.config.rules import load_rules
@@ -17,10 +22,36 @@ from src.prediction.baseline import BaselinePredictor
 from src.prediction.engine import PredictionEngine
 from src.research.researcher import MarketResearcher
 from src.risk.manager import RiskManager
+from src.scanner.base import Market
 from src.scanner.kalshi import KalshiScanner
 from src.scanner.polymarket import PolymarketScanner
 
 logger = get_logger(__name__)
+
+
+@dataclass
+class CycleReport:
+    scanned: int = 0
+    ranked: int = 0
+    signals: int = 0
+    risk_passed: int = 0
+    book_passed: int = 0
+    filled: int = 0
+    errors: dict[str, int] = field(default_factory=dict)
+
+    def bump_error(self, step: str) -> None:
+        self.errors[step] = self.errors.get(step, 0) + 1
+
+    def as_dict(self) -> dict:
+        return {
+            "scanned": self.scanned,
+            "ranked": self.ranked,
+            "signals": self.signals,
+            "risk_passed": self.risk_passed,
+            "book_passed": self.book_passed,
+            "filled": self.filled,
+            "errors": self.errors,
+        }
 
 
 class Bot:
@@ -36,57 +67,135 @@ class Bot:
             rules=self.rules,
         )
         self.tracker = PerformanceTracker()
-        # TODO: swap for live executors when TRADING_MODE=live
         self.executor = PaperExecutor()
         self._open_ids: set[str] = set()
 
-    async def run_cycle(self) -> None:
+    async def run_cycle(self) -> CycleReport:
+        report = CycleReport()
         logger.info("cycle.start", mode=cfg.bot.trading_mode)
 
         if self.executor.is_halted():
             logger.warning("cycle.halted", reason="STOP file present")
+            logger.info("cycle.end", report=report.as_dict(), halted=True)
+            return report
+
+        # 1. Scan ─────────────────────────────────────────────────────────────
+        raw_markets = await self._safe_scan(report)
+        report.scanned = len(raw_markets)
+        if not raw_markets:
+            logger.warning("cycle.empty_scan")
+            logger.info("cycle.end", report=report.as_dict())
+            return report
+
+        # 2. Filter ───────────────────────────────────────────────────────────
+        try:
+            scored = self.market_filter.run(raw_markets)
+        except Exception as exc:
+            logger.exception("cycle.filter_failed", error=str(exc))
+            report.bump_error("filter")
+            logger.info("cycle.end", report=report.as_dict())
+            return report
+        report.ranked = len(scored)
+        logger.info("cycle.filtered", scanned=report.scanned, ranked=report.ranked)
+
+        # 3-7. Per-market pipeline ────────────────────────────────────────────
+        risk = RiskManager(open_market_ids=self._open_ids)
+        for sm in scored:
+            try:
+                await self._process_market(sm.market, risk, report)
+            except Exception as exc:
+                logger.exception(
+                    "cycle.market_failed",
+                    market_id=sm.market.id,
+                    error=str(exc),
+                )
+                report.bump_error("market")
+
+        logger.info(
+            "cycle.end",
+            report=report.as_dict(),
+            paper=self.executor.summary(),
+            tracker=self.tracker.summary(),
+        )
+        return report
+
+    # ── Steps ───────────────────────────────────────────────────────────────
+
+    async def _safe_scan(self, report: CycleReport) -> list[Market]:
+        raw: list[Market] = []
+        for cls in self.scanner_classes:
+            if cfg.platforms.__dict__.get(cls.platform, None) is None:
+                continue
+            try:
+                markets = await cls().scan()
+            except Exception as exc:
+                logger.exception("scan.failed", platform=cls.platform, error=str(exc))
+                report.bump_error(f"scan.{cls.platform}")
+                continue
+            logger.info("scan.ok", platform=cls.platform, count=len(markets))
+            raw.extend(markets)
+        return raw
+
+    async def _process_market(
+        self,
+        market: Market,
+        risk: RiskManager,
+        report: CycleReport,
+    ) -> None:
+        # Research
+        try:
+            research = await self.researcher.research(market)
+        except Exception as exc:
+            logger.exception("research.failed", market_id=market.id, error=str(exc))
+            report.bump_error("research")
             return
 
-        # ── 1. Scan ───────────────────────────────────────────────────────────
-        raw_markets = []
-        for cls in self.scanner_classes:
-            if cfg.platforms.__dict__.get(cls.platform, None) is not None:
-                raw_markets.extend(await cls().scan())
-
-        # ── 2. Filter + rank ──────────────────────────────────────────────────
-        scored_markets = self.market_filter.run(raw_markets)
-
-        # ── 3–6. Research → Predict → Risk → Execute ─────────────────────────
-        risk = RiskManager(open_market_ids=self._open_ids)
-
-        for sm in scored_markets:
-            market = sm.market
-            research = await self.researcher.research(market)
+        # Predict
+        try:
             signal = await self.engine.run(market, research)
+        except Exception as exc:
+            logger.exception("predict.failed", market_id=market.id, error=str(exc))
+            report.bump_error("predict")
+            return
+        if not signal.is_signal:
+            return
+        report.signals += 1
 
-            if not signal.is_signal:
-                continue
+        pred = signal.prediction
 
-            pred = signal.prediction
+        # Risk
+        try:
             decision = risk.evaluate(pred)
-            if not decision.approved:
-                logger.info("cycle.skip", market_id=market.id, reason=decision.reason)
-                continue
+        except Exception as exc:
+            logger.exception("risk.failed", market_id=market.id, error=str(exc))
+            report.bump_error("risk")
+            return
+        if not decision.approved:
+            logger.info("cycle.skip", market_id=market.id, step="risk", reason=decision.reason)
+            return
+        report.risk_passed += 1
 
-            # ── Orderbook safety gate ─────────────────────────────────────
+        # Orderbook gate
+        try:
             book = OrderBook.from_market(market)
-            book_check = book.is_trade_safe(
-                pred.recommended_side, decision.size_usd, self.rules,
+            book_check = book.is_trade_safe(pred.recommended_side, decision.size_usd, self.rules)
+        except Exception as exc:
+            logger.exception("orderbook.failed", market_id=market.id, error=str(exc))
+            report.bump_error("orderbook")
+            return
+        if not book_check:
+            logger.info(
+                "cycle.skip",
+                market_id=market.id,
+                step="orderbook",
+                reason=f"orderbook: {book_check.failures}",
             )
-            if not book_check:
-                logger.info(
-                    "cycle.skip",
-                    market_id=market.id,
-                    reason=f"orderbook: {book_check.failures}",
-                )
-                continue
+            return
+        report.book_passed += 1
 
-            price = pred.p_market if pred.edge > 0 else 1 - pred.p_market
+        # Execute
+        price = pred.p_market if pred.edge > 0 else 1 - pred.p_market
+        try:
             trade = await self.executor.submit(
                 market_id=market.id,
                 platform=market.platform,
@@ -95,11 +204,18 @@ class Bot:
                 limit_price=price,
                 book=book,
             )
-            if trade is None:
-                logger.info("cycle.skip", market_id=market.id, reason="paper fill rejected")
-                continue
-            self._open_ids.add(market.id)
+        except Exception as exc:
+            logger.exception("execute.failed", market_id=market.id, error=str(exc))
+            report.bump_error("execute")
+            return
+        if trade is None:
+            logger.info("cycle.skip", market_id=market.id, step="execute", reason="paper fill rejected")
+            return
+        report.filled += 1
+        self._open_ids.add(market.id)
 
+        # Record for learning (non-fatal)
+        try:
             self.tracker.record(PredRecord(
                 market_id=market.id,
                 p_model=pred.p_model,
@@ -109,9 +225,6 @@ class Bot:
                 size_usd=decision.size_usd,
                 model_name=pred.model_name,
             ))
-
-        logger.info(
-            "cycle.end",
-            tracker=self.tracker.summary(),
-            paper=self.executor.summary(),
-        )
+        except Exception as exc:
+            logger.exception("tracker.failed", market_id=market.id, error=str(exc))
+            report.bump_error("tracker")
