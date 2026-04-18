@@ -21,7 +21,10 @@ class SizingDecision:
 class RiskManager:
 
     def __init__(self, open_market_ids: set[str] | None = None) -> None:
-        self.open_market_ids = open_market_ids or set()
+        # Hold the caller's set by reference so later fills in the same
+        # cycle count against max_open_positions. `or` would swap an empty
+        # set for a fresh local one and break that invariant.
+        self.open_market_ids = open_market_ids if open_market_ids is not None else set()
 
     def evaluate(self, pred: PredictionResult) -> SizingDecision:
         rc = cfg.risk

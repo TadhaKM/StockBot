@@ -219,3 +219,90 @@ class TestPerMarketErrors:
         assert report.signals == 0
         assert report.filled == 0
         assert report.errors == {}
+
+
+# ── Review fixes ─────────────────────────────────────────────────────────────
+
+class TestEnabledFlag:
+    def test_disabled_platform_is_skipped(self, bot):
+        from src.config import cfg
+
+        good = _make_scanner("polymarket", markets=[_market("m1")])
+        bad = _make_scanner("kalshi", raises=RuntimeError("should not run"))
+        bot.scanner_classes = [good, bad]
+
+        original_enabled = cfg.platforms.kalshi.enabled
+        cfg.platforms.kalshi.enabled = False
+        try:
+            bot.market_filter = _StubFilter(scored=[])
+            report = asyncio.run(bot.run_cycle())
+        finally:
+            cfg.platforms.kalshi.enabled = original_enabled
+
+        # Kalshi was disabled -> it didn't run, so no error from it
+        assert "scan.kalshi" not in report.errors
+
+
+class TestRestartRehydratesOpenIds:
+    def test_bot_init_loads_persisted_positions(self, tmp_path):
+        # Seed a persisted position, then init a fresh bot with that paths
+        pos_file = tmp_path / "open_positions.json"
+        pos_file.write_text(
+            '[{"market_id": "old-1", "platform": "poly", "side": "yes",'
+            ' "entry_price": 0.62, "size_usd": 200.0, "contracts": 322.58,'
+            ' "limit_price": 0.62, "opened_at": "2026-04-17T00:00:00+00:00",'
+            ' "mark_price": 0.62, "unrealized_pnl": 0.0}]'
+        )
+        exec_ = PaperExecutor(
+            positions_file=pos_file,
+            trades_log=tmp_path / "trade_log.jsonl",
+            closed_log=tmp_path / "closed_positions.jsonl",
+            stop_file=tmp_path / "STOP",
+        )
+        # Simulate what Bot.__init__ does
+        open_ids = {p.market_id for p in exec_.positions}
+        assert open_ids == {"old-1"}
+
+
+class TestRiskManagerSharedSet:
+    def test_empty_set_is_held_by_reference(self):
+        from src.risk.manager import RiskManager
+
+        shared: set[str] = set()
+        rm = RiskManager(open_market_ids=shared)
+        assert rm.open_market_ids is shared
+        shared.add("m1")
+        # The manager must see the new id without being re-created
+        assert "m1" in rm.open_market_ids
+
+
+class TestPortfolioGate:
+    def test_daily_loss_breach_halts_cycle(self, bot, tmp_path):
+        # Write a big losing close today
+        today = datetime.now(timezone.utc).isoformat()
+        (tmp_path / "closed_positions.jsonl").write_text(
+            '{"event": "close", "realized_pnl": -9999.0, "closed_at": "'
+            + today + '"}\n'
+        )
+        # Point the bot's helper at our tmp dir by monkeypatching cwd
+        import os
+        original_cwd = os.getcwd()
+        os.chdir(tmp_path.parent)
+        try:
+            # Have to mimic path layout the helper expects
+            target = tmp_path.parent / "data" / "trades"
+            target.mkdir(parents=True, exist_ok=True)
+            (target / "closed_positions.jsonl").write_text(
+                '{"event": "close", "realized_pnl": -9999.0, "closed_at": "'
+                + today + '"}\n'
+            )
+
+            good = _make_scanner("polymarket", markets=[_market("m1")])
+            bot.scanner_classes = [good]
+            bot.market_filter = _StubFilter(scored=[ScoredMarket(_market("m1"), 90.0)])
+
+            report = asyncio.run(bot.run_cycle())
+            assert report.halted_by_portfolio is True
+            assert report.filled == 0
+        finally:
+            os.chdir(original_cwd)

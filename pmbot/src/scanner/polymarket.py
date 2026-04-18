@@ -37,11 +37,18 @@ class PolymarketScanner(BaseScanner):
                     headers={"Authorization": f"Bearer {api_key}"},
                 )
                 resp.raise_for_status()
-                # TODO: parse real response shape
-                return []
+                # TODO: parse real response shape. Until then we return
+                # mock data so the rest of the pipeline has something to
+                # chew on -- empty results would silently starve it.
+                logger.warning(
+                    "polymarket.parse_todo",
+                    fallback="mock",
+                    reason="response parsing not implemented",
+                )
+                return _mock_markets()
             except httpx.HTTPError as exc:
-                logger.error("polymarket.fetch_error", error=str(exc))
-                return []
+                logger.error("polymarket.fetch_error", error=str(exc), fallback="mock")
+                return _mock_markets()
 
 
 def _mock_markets() -> list[Market]:

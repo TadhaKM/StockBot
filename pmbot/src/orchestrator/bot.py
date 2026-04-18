@@ -11,8 +11,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+
 from src.config import cfg
-from src.config.rules import load_rules
+from src.config.rules import BotState, load_rules, validate_trade_allowed
 from src.execution.orderbook import OrderBook
 from src.execution.paper import PaperExecutor
 from src.filter.market_filter import MarketFilter
@@ -35,8 +39,10 @@ class CycleReport:
     ranked: int = 0
     signals: int = 0
     risk_passed: int = 0
+    portfolio_passed: int = 0
     book_passed: int = 0
     filled: int = 0
+    halted_by_portfolio: bool = False
     errors: dict[str, int] = field(default_factory=dict)
 
     def bump_error(self, step: str) -> None:
@@ -48,8 +54,10 @@ class CycleReport:
             "ranked": self.ranked,
             "signals": self.signals,
             "risk_passed": self.risk_passed,
+            "portfolio_passed": self.portfolio_passed,
             "book_passed": self.book_passed,
             "filled": self.filled,
+            "halted_by_portfolio": self.halted_by_portfolio,
             "errors": self.errors,
         }
 
@@ -67,8 +75,21 @@ class Bot:
             rules=self.rules,
         )
         self.tracker = PerformanceTracker()
+
+        if cfg.bot.trading_mode == "live":
+            logger.warning(
+                "bot.live_mode_not_implemented",
+                falling_back_to="paper",
+                note="live executor not implemented; using PaperExecutor",
+            )
         self.executor = PaperExecutor()
-        self._open_ids: set[str] = set()
+
+        # Re-hydrate the open-id set from whatever positions the paper
+        # engine restored from disk, so duplicate / max-position checks
+        # are correct on restart.
+        self._open_ids: set[str] = {p.market_id for p in self.executor.positions}
+        if self._open_ids:
+            logger.info("bot.loaded_positions", count=len(self._open_ids))
 
     async def run_cycle(self) -> CycleReport:
         report = CycleReport()
@@ -98,7 +119,25 @@ class Bot:
         report.ranked = len(scored)
         logger.info("cycle.filtered", scanned=report.scanned, ranked=report.ranked)
 
-        # 3-7. Per-market pipeline ────────────────────────────────────────────
+        # 3. Portfolio-wide risk gate (once per cycle) ────────────────────────
+        portfolio_state = self._snapshot_state()
+        portfolio_check = validate_trade_allowed(portfolio_state, self.rules)
+        if not portfolio_check.passed:
+            logger.warning(
+                "cycle.portfolio_halt",
+                failures=portfolio_check.failures,
+                state={
+                    "open_positions": portfolio_state.open_positions,
+                    "total_exposure_fraction": round(portfolio_state.total_exposure_fraction, 4),
+                    "daily_loss_fraction": round(portfolio_state.daily_loss_fraction, 4),
+                    "drawdown_fraction": round(portfolio_state.drawdown_fraction, 4),
+                },
+            )
+            report.halted_by_portfolio = True
+            logger.info("cycle.end", report=report.as_dict(), paper=self.executor.summary())
+            return report
+
+        # 4-7. Per-market pipeline ────────────────────────────────────────────
         risk = RiskManager(open_market_ids=self._open_ids)
         for sm in scored:
             try:
@@ -119,12 +158,69 @@ class Bot:
         )
         return report
 
+    # ── Portfolio snapshot ──────────────────────────────────────────────────
+
+    def _snapshot_state(self) -> BotState:
+        """Build a BotState from the paper executor + closed-position history."""
+        bankroll = max(cfg.risk.bankroll_usd, 1e-9)
+        exposure = self.executor.total_exposure_usd() / bankroll
+        daily_loss, drawdown = self._read_closed_pnl(bankroll)
+        return BotState(
+            open_positions=len(self.executor.positions),
+            total_exposure_fraction=exposure,
+            daily_loss_fraction=daily_loss,
+            drawdown_fraction=drawdown,
+        )
+
+    @staticmethod
+    def _read_closed_pnl(bankroll: float) -> tuple[float, float]:
+        """
+        Scan closed_positions.jsonl to derive (daily_loss_frac, drawdown_frac).
+
+        daily_loss_frac: today's realized loss / bankroll (positive = losing)
+        drawdown_frac:   peak-to-trough dip in cumulative realised PnL / bankroll
+        """
+        path = Path("data/trades/closed_positions.jsonl")
+        if not path.exists():
+            return 0.0, 0.0
+
+        today = datetime.now(timezone.utc).date().isoformat()
+        today_pnl = 0.0
+        cum = 0.0
+        peak = 0.0
+        worst_drawdown = 0.0
+
+        try:
+            for line in path.read_text(encoding="utf-8").splitlines():
+                if not line.strip():
+                    continue
+                entry = json.loads(line)
+                pnl = float(entry.get("realized_pnl", 0.0))
+                closed_at = entry.get("closed_at", "")
+                if closed_at.startswith(today):
+                    today_pnl += pnl
+                cum += pnl
+                peak = max(peak, cum)
+                worst_drawdown = max(worst_drawdown, peak - cum)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            logger.warning("bot.closed_pnl_unreadable", error=str(exc))
+            return 0.0, 0.0
+
+        daily_loss_frac = max(-today_pnl, 0.0) / bankroll
+        drawdown_frac = worst_drawdown / bankroll
+        return daily_loss_frac, drawdown_frac
+
     # ── Steps ───────────────────────────────────────────────────────────────
 
     async def _safe_scan(self, report: CycleReport) -> list[Market]:
         raw: list[Market] = []
         for cls in self.scanner_classes:
-            if cfg.platforms.__dict__.get(cls.platform, None) is None:
+            platform_cfg = getattr(cfg.platforms, cls.platform, None)
+            if platform_cfg is None:
+                logger.info("scan.skipped", platform=cls.platform, reason="no_config")
+                continue
+            if not platform_cfg.enabled:
+                logger.info("scan.skipped", platform=cls.platform, reason="disabled")
                 continue
             try:
                 markets = await cls().scan()
@@ -174,6 +270,20 @@ class Bot:
             logger.info("cycle.skip", market_id=market.id, step="risk", reason=decision.reason)
             return
         report.risk_passed += 1
+
+        # Portfolio exposure after this hypothetical fill
+        bankroll = cfg.risk.bankroll_usd
+        projected_exposure = (self.executor.total_exposure_usd() + decision.size_usd) / bankroll
+        max_exposure = self.rules.sizing.max_total_exposure
+        if projected_exposure > max_exposure:
+            logger.info(
+                "cycle.skip",
+                market_id=market.id,
+                step="portfolio",
+                reason=f"projected exposure {projected_exposure:.2%} > max {max_exposure:.2%}",
+            )
+            return
+        report.portfolio_passed += 1
 
         # Orderbook gate
         try:
