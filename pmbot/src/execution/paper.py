@@ -31,7 +31,7 @@ logger = get_logger(__name__)
 
 _TRADES_DIR = Path("data/trades")
 _POSITIONS_FILE = _TRADES_DIR / "open_positions.json"
-_TRADES_LOG = _TRADES_DIR / "trades.jsonl"
+_TRADES_LOG = _TRADES_DIR / "trade_log.jsonl"
 _CLOSED_LOG = _TRADES_DIR / "closed_positions.jsonl"
 _STOP_FILE = Path("data/STOP")
 

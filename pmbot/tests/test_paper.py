@@ -18,7 +18,7 @@ def tmp_exec(tmp_path: Path) -> PaperExecutor:
     """A fresh executor whose files are all inside a tmp dir."""
     return PaperExecutor(
         positions_file=tmp_path / "open_positions.json",
-        trades_log=tmp_path / "trades.jsonl",
+        trades_log=tmp_path / "trade_log.jsonl",
         closed_log=tmp_path / "closed_positions.jsonl",
         stop_file=tmp_path / "STOP",
     )
@@ -193,7 +193,7 @@ class TestPersistence:
     def test_positions_reload_on_new_instance(self, tmp_path):
         e1 = PaperExecutor(
             positions_file=tmp_path / "open_positions.json",
-            trades_log=tmp_path / "trades.jsonl",
+            trades_log=tmp_path / "trade_log.jsonl",
             closed_log=tmp_path / "closed_positions.jsonl",
             stop_file=tmp_path / "STOP",
         )
@@ -204,7 +204,7 @@ class TestPersistence:
 
         e2 = PaperExecutor(
             positions_file=tmp_path / "open_positions.json",
-            trades_log=tmp_path / "trades.jsonl",
+            trades_log=tmp_path / "trade_log.jsonl",
             closed_log=tmp_path / "closed_positions.jsonl",
             stop_file=tmp_path / "STOP",
         )
@@ -216,7 +216,7 @@ class TestPersistence:
             market_id="m1", platform="poly", side="yes",
             size_usd=200, limit_price=0.62, book=_book(),
         ))
-        lines = (tmp_path / "trades.jsonl").read_text().strip().split("\n")
+        lines = (tmp_path / "trade_log.jsonl").read_text().strip().split("\n")
         assert len(lines) == 1
         record = json.loads(lines[0])
         assert record["event"] == "open"
