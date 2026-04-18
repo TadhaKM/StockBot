@@ -193,8 +193,10 @@ class Bot:
             return
         report.book_passed += 1
 
-        # Execute
-        price = pred.p_market if pred.edge > 0 else 1 - pred.p_market
+        # Execute: limit at our model's fair value -- we'll pay up to what
+        # we believe the contract is worth, which is above the current ask
+        # by exactly `edge`. Side-native: YES pays p_model, NO pays 1-p_model.
+        price = pred.p_model if pred.edge > 0 else 1 - pred.p_model
         try:
             trade = await self.executor.submit(
                 market_id=market.id,
